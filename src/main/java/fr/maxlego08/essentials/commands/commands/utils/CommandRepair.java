@@ -19,6 +19,7 @@ public class CommandRepair extends VCommand {
         super(plugin);
         this.setPermission(Permission.ESSENTIALS_REPAIR);
         this.setDescription(Message.DESCRIPTION_REPAIR);
+        onlyPlayers();
     }
 
     @Override

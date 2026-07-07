@@ -6,6 +6,7 @@ import fr.maxlego08.essentials.api.commands.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.permissions.Permissible;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -43,6 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class ZUtils extends MessageUtils {
 
     private static final Set<UUID> VANISHED_PLAYERS = ConcurrentHashMap.newKeySet();
+
+    private static final NamespacedKey UNREPAIRABLE_KEY = new NamespacedKey("zitems", "unrepairable");
 
     public boolean shouldFlyBasedOnLocation(final Location location) {
         final World world = location.getWorld();
@@ -460,7 +464,8 @@ public abstract class ZUtils extends MessageUtils {
             if (itemStack != null && itemStack.hasItemMeta()) {
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 if (itemMeta instanceof Damageable damageable) {
-                    if (damageable.hasDamage()) {
+                    PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
+                    if (damageable.hasDamage() && !persistentDataContainer.has(UNREPAIRABLE_KEY)) {
                         amount++;
                     }
                 }
