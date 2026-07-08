@@ -394,18 +394,23 @@ public class ZUser extends ZUtils implements User {
         Player player = this.getPlayer();
         if (player == null) return;
 
-        Location location = player.isFlying() ? toLocation : teleportationModule.isTeleportSafety() ? toSafeLocation(toLocation) : toLocation;
+        boolean isFlying = player.isFlying();
 
-        if (teleportationModule.isTeleportToCenter()) {
-            location = location.getBlock().getLocation().add(0.5, 0, 0.5);
-            location.setYaw(toLocation.getYaw());
-            location.setPitch(toLocation.getPitch());
-        }
+        this.plugin.getScheduler().runAtLocation(toLocation, wrappedTask -> {
 
-        this.teleportNow(location);
-        if (message != null) {
-            message(this, message, args);
-        }
+            Location location = isFlying ? toLocation : teleportationModule.isTeleportSafety() ? toSafeLocation(toLocation) : toLocation;
+
+            if (teleportationModule.isTeleportToCenter()) {
+                location = location.getBlock().getLocation().add(0.5, 0, 0.5);
+                location.setYaw(toLocation.getYaw());
+                location.setPitch(toLocation.getPitch());
+            }
+
+            this.teleportNow(location);
+            if (message != null) {
+                message(this, message, args);
+            }
+        });
     }
 
     @Override
