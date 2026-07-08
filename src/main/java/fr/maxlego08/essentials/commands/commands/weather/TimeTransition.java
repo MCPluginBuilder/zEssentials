@@ -1,12 +1,13 @@
 package fr.maxlego08.essentials.commands.commands.weather;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import fr.maxlego08.essentials.api.EssentialsPlugin;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * Utility class for smooth time transitions in worlds and for players
@@ -23,25 +24,28 @@ class TimeTransition {
         UUID worldId = world.getUID();
         TIME_CHANGING_WORLDS.add(worldId);
 
-        long startTime = world.getFullTime();
-        long diff = (targetTime - startTime + 24000) % 24000;
-
-        new BukkitRunnable() {
+        plugin.getScheduler().runTimer(new Consumer<>() {
             long progressed = 0;
+            long diff = -1;
 
             @Override
-            public void run() {
+            public void accept(WrappedTask wrappedTask) {
+                if (diff == -1) {
+                    long startTime = world.getFullTime();
+                    diff = (targetTime - startTime + 24000) % 24000;
+                }
+
                 if (progressed >= diff) {
                     world.setFullTime(targetTime);
                     TIME_CHANGING_WORLDS.remove(worldId);
-                    cancel();
+                    wrappedTask.cancel();
                     return;
                 }
 
                 world.setFullTime(world.getFullTime() + WORLD_TIME_STEP);
                 progressed += WORLD_TIME_STEP;
             }
-        }.runTaskTimer(plugin, 0L, 1L);
+        }, 1L, 1L);
     }
 
     /**
