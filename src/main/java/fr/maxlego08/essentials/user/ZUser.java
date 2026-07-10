@@ -194,6 +194,11 @@ public class ZUser extends ZUtils implements User {
             return;
         }
 
+        if (targetUser.getOption(Option.TELEPORT_HERE_REQUEST_DISABLE)) {
+            message(this, Message.COMMAND_TELEPORT_HERE_REQUEST_DISABLED, targetUser);
+            return;
+        }
+
         this.teleports.entrySet().removeIf(next -> !next.getValue().isValid());
 
         if (this.teleports.containsKey(targetUser.getUniqueId())) {

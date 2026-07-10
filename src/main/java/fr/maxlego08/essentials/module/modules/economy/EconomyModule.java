@@ -21,6 +21,7 @@ import fr.maxlego08.essentials.api.event.events.user.UserJoinEvent;
 import fr.maxlego08.essentials.api.event.events.user.UserQuitEvent;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.storage.IStorage;
+import fr.maxlego08.essentials.api.user.Option;
 import fr.maxlego08.essentials.api.user.User;
 import fr.maxlego08.essentials.module.ZModule;
 import fr.maxlego08.menu.api.engine.Pagination;
@@ -362,7 +363,11 @@ public class EconomyModule extends ZModule implements EconomyManager {
         perform(toUuid, user -> user.deposit(fromUuid, economy, amount, this.payDepositReason.replace("%player%", fromName)));
 
         message(fromUuid, Message.COMMAND_PAY_SENDER, "%amount%", this.format(economy, amount), "%player%", toName);
-        message(toUuid, Message.COMMAND_PAY_RECEIVER, "%amount%", this.format(economy, amount), "%player%", fromName);
+        this.plugin.getStorageManager().getStorage().getOption(toUuid, Option.PAY_NOTIFICATION_DISABLE, isDisable -> {
+            if (!isDisable) {
+                message(toUuid, Message.COMMAND_PAY_RECEIVER, "%amount%", this.format(economy, amount), "%player%", fromName);
+            }
+        });
     }
 
     @Override
