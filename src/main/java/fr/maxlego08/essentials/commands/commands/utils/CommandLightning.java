@@ -91,10 +91,12 @@ public final class CommandLightning extends VCommand {
     }
 
     private void strike(Location location, boolean visual) {
-        if (visual) {
-            location.getWorld().strikeLightning(location);
-        } else {
-            location.getWorld().strikeLightningEffect(location);
-        }
+        this.plugin.getScheduler().runAtLocation(location, wrappedTask -> {
+            if (visual) {
+                location.getWorld().strikeLightning(location);
+            } else {
+                location.getWorld().strikeLightningEffect(location);
+            }
+        });
     }
 }
