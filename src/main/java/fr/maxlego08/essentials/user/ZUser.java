@@ -188,9 +188,8 @@ public class ZUser extends ZUtils implements User {
             return;
         }
 
-        // Check if target user has disabled teleport requests
-        if (targetUser.getOption(Option.TELEPORT_REQUEST_DISABLE)) {
-            message(this, Message.COMMAND_TELEPORT_REQUEST_DISABLED, targetUser);
+        if (targetUser.getOption(Option.TELEPORT_HERE_REQUEST_DISABLE)) {
+            message(this, Message.COMMAND_TELEPORT_HERE_REQUEST_DISABLED, targetUser);
             return;
         }
 

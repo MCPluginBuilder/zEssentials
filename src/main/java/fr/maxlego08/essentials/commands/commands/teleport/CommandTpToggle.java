@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 
 /**
  * Command to toggle receiving teleport requests.
- * Allows players to enable/disable receiving TPA and TPAHERE requests from other players.
+ * Allows players to enable/disable receiving TPA requests from other players.
  */
 public class CommandTpToggle extends VCommand {
     

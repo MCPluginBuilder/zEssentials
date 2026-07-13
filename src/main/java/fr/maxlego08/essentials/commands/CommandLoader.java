@@ -19,6 +19,7 @@ import fr.maxlego08.essentials.commands.commands.economy.CommandBalanceTop;
 import fr.maxlego08.essentials.commands.commands.economy.CommandEconomy;
 import fr.maxlego08.essentials.commands.commands.economy.CommandMoney;
 import fr.maxlego08.essentials.commands.commands.economy.CommandPay;
+import fr.maxlego08.essentials.commands.commands.economy.CommandPayNotificationToggle;
 import fr.maxlego08.essentials.commands.commands.economy.CommandPayToggle;
 import fr.maxlego08.essentials.commands.commands.enderchest.CommandEnderChest;
 import fr.maxlego08.essentials.commands.commands.enderchest.CommandEnderSee;
@@ -50,6 +51,7 @@ import fr.maxlego08.essentials.commands.commands.messages.CommandMessage;
 import fr.maxlego08.essentials.commands.commands.messages.CommandMessageToggle;
 import fr.maxlego08.essentials.commands.commands.messages.CommandReply;
 import fr.maxlego08.essentials.commands.commands.messages.CommandSocialSpy;
+import fr.maxlego08.essentials.commands.commands.teleport.CommandTpaHereToggle;
 import fr.maxlego08.essentials.commands.commands.teleport.CommandTpToggle;
 import fr.maxlego08.essentials.commands.commands.sanction.CommandBan;
 import fr.maxlego08.essentials.commands.commands.sanction.CommandFreeze;
@@ -196,6 +198,7 @@ public class CommandLoader {
         register("money", CommandMoney.class, "balance");
         register("pay", CommandPay.class);
         register("paytoggle", CommandPayToggle.class);
+        register("paynotificationtoggle", CommandPayNotificationToggle.class, "paynotify");
 
         register("setfirstspawn", CommandSetFirstSpawn.class);
         register("setspawn", CommandSetSpawn.class);
@@ -236,6 +239,7 @@ public class CommandLoader {
         register("reply", CommandReply.class, "r");
         register("messagetoggle", CommandMessageToggle.class, "msgtoggle", "mtg");
         register("tptoggle", CommandTpToggle.class);
+        register("tpaheretoggle", CommandTpaHereToggle.class);
         register("socialspy", CommandSocialSpy.class);
 
         register("repair", CommandRepair.class, "fix");
