@@ -6,6 +6,19 @@
 
 # Unreleased
 
+- Fixed the chat ping sound not playing on Paper 1.21.3+ — `org.bukkit.Sound` became an interface, so the ping sound is now resolved cross-version through the zMenu XSound API (like the teleportation sounds)
+- Fixed countdown/teleport placeholders (`%name%`, `%seconds%`, ...) showing as raw text when the message `type` is set to `TITLE` or `BOSSBAR` — internal placeholders are now resolved for every message type
+- Added `/pingsound` command (`/pingsounds` alias) to toggle the chat ping sound per player; the `enable-player-ping-sound` global toggle is now honored
+- Added `/tp <player1> <player2>` — teleport one player to another player
+- Added a player ignore system with persistence (`user_ignores` table):
+    - `/ignore <player>` blocks a player's private messages and teleport requests (`/tpa`, `/tpahere`)
+    - `/unignore <player>` and `/ignorelist` (`/ignores` alias)
+    - Works for online and offline targets, persists across restarts (MySQL and JSON storage)
+- Added `/delhome-other <player> <home>` (`/delhomeother`, `/hdelother` aliases) — admin command to delete a specific home of another player (online or offline), with permission `essentials.del.home.other`
+- Added persistence for `/ptime` and `/pweather` — the per-player time and weather are now saved and re-applied automatically when the player reconnects
+- Fixed private messages to a vanished player revealing their presence when they had ignored the sender — the vanish check now takes precedence over the ignore check
+- Removed the non-functional `itemadders-font-regex` chat config options (the feature was never wired) and corrected the `/sc` reference in the chat config comment (it is `/chathistory`)
+
 # 1.0.3.7
 
 - Added player list placeholders for retrieving online player information by index (1-based, sorted alphabetically, excludes vanished players):

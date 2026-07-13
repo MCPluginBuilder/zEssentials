@@ -269,6 +269,16 @@ public class JsonStorage extends StorageHelper implements IStorage {
     }
 
     @Override
+    public void addIgnore(UUID uniqueId, UUID ignoredId) {
+        this.saveFileAsync(uniqueId);
+    }
+
+    @Override
+    public void removeIgnore(UUID uniqueId, UUID ignoredId) {
+        this.saveFileAsync(uniqueId);
+    }
+
+    @Override
     public void insertSanction(Sanction sanction, Consumer<Integer> consumer) {
         throw new NotImplementedException("insertSanction is not implemented, use MYSQL storage");
     }
@@ -480,6 +490,11 @@ public class JsonStorage extends StorageHelper implements IStorage {
     @Override
     public long getFlySeconds(UUID uniqueId) {
         return 0;
+    }
+
+    @Override
+    public void updatePlayerTimeWeather(UUID uniqueId, long playerTime, String playerWeather) {
+        this.saveFileAsync(uniqueId);
     }
 
     @Override

@@ -4,6 +4,7 @@ import fr.maxlego08.essentials.api.EssentialsPlugin;
 import fr.maxlego08.essentials.api.commands.CommandResultType;
 import fr.maxlego08.essentials.api.commands.Permission;
 import fr.maxlego08.essentials.api.messages.Message;
+import fr.maxlego08.essentials.api.user.User;
 import fr.maxlego08.essentials.module.modules.TeleportationModule;
 import fr.maxlego08.essentials.zutils.utils.commands.VCommand;
 import org.bukkit.Location;
@@ -35,6 +36,14 @@ public class CommandTeleport extends VCommand {
             if (targetPlayer == null) return CommandResultType.SYNTAX_ERROR;
             this.user.teleportNow(targetPlayer.getLocation());
             message(this.sender, Message.COMMAND_TP, targetPlayer);
+        } else if (args.length == 2 && this.argAsPlayer(0) != null && this.argAsPlayer(1) != null) {
+            // /tp <player1> <player2> : teleport player1 to player2
+            Player fromPlayer = this.argAsPlayer(0);
+            Player toPlayer = this.argAsPlayer(1);
+            User fromUser = getUser(fromPlayer);
+            if (fromUser == null) return CommandResultType.SYNTAX_ERROR;
+            fromUser.teleportNow(toPlayer.getLocation());
+            message(this.sender, Message.COMMAND_TP_OTHER, "%player%", fromPlayer.getName(), "%target%", toPlayer.getName());
         } else {
             String value = this.argAsString(0);
             Location location = player.getLocation();

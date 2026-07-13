@@ -90,10 +90,10 @@ public abstract class MessageUtils extends PlaceholderUtils {
                 } else if (essentialsMessage instanceof BossBarMessage bossBarMessage) {
 
                     EssentialsPlugin plugin = (EssentialsPlugin) Bukkit.getPluginManager().getPlugin("zEssentials");
-                    this.componentMessage.sendBossBar(plugin, player, bossBarMessage);
+                    this.componentMessage.sendBossBar(plugin, player, bossBarMessage, handleArgs(args));
                 } else if (essentialsMessage instanceof TitleMessage titleMessage) {
 
-                    this.componentMessage.sendTitle(player, titleMessage);
+                    this.componentMessage.sendTitle(player, titleMessage, handleArgs(args));
                 }
             });
         } else {
@@ -115,12 +115,22 @@ public abstract class MessageUtils extends PlaceholderUtils {
     }
 
     protected String getMessage(String message, Object... args) {
+        return getString(message, handleArgs(args));
+    }
 
+    /**
+     * Normalises the given arguments so that {@link Player}/{@link User} objects are expanded into their
+     * %player%/%displayName% placeholder pairs. This is the same normalisation applied to classic chat
+     * messages and must be applied to every message type (title, boss bar, ...) so internal placeholders
+     * such as %name% or %seconds% are resolved consistently.
+     *
+     * @param args the raw arguments
+     * @return the normalised, placeholder-paired arguments
+     */
+    protected Object[] handleArgs(Object... args) {
         List<Object> modifiedArgs = new ArrayList<>();
         for (Object arg : args) handleArg(arg, modifiedArgs);
-        Object[] newArgs = modifiedArgs.toArray();
-
-        return getString(message, newArgs);
+        return modifiedArgs.toArray();
     }
 
     private void handleArg(Object arg, List<Object> modifiedArgs) {

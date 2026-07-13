@@ -267,6 +267,14 @@ public class UserRepository extends Repository {
         });
     }
 
+    public void updatePlayerTimeWeather(UUID uniqueId, long playerTime, String playerWeather) {
+        update(table -> {
+            table.bigInt("player_time", playerTime);
+            table.string("player_weather", playerWeather);
+            table.where("unique_id", uniqueId);
+        });
+    }
+
     public long selectFly(UUID uniqueId) {
         var users = selectUser(uniqueId);
         return users.isEmpty() ? 0 : users.getFirst().fly_seconds();

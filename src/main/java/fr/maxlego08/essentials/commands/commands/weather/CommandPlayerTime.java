@@ -26,6 +26,7 @@ public class CommandPlayerTime extends VCommand {
         if (ticks == 0) {
 
             player.resetPlayerTime();
+            if (this.user != null) this.user.setPlayerTime(0);
             message(player, Message.COMMAND_PLAYER_TIME_RESET);
 
         } else {
@@ -35,6 +36,7 @@ public class CommandPlayerTime extends VCommand {
             time += 24000L + ticks;
 
             player.setPlayerTime(time, false);
+            if (this.user != null) this.user.setPlayerTime(ticks);
             message(player, Message.COMMAND_PLAYER_TIME_CHANGE);
         }
 

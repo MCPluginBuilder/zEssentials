@@ -68,8 +68,9 @@ public interface ComponentMessage {
      * @param plugin         the plugin instance responsible for sending the boss bar
      * @param player         the player who will receive the boss bar message
      * @param bossBarMessage the BossBarMessage object containing the details of the boss bar
+     * @param args           the arguments used to resolve placeholders inside the boss bar text
      */
-    void sendBossBar(EssentialsPlugin plugin, Player player, BossBarMessage bossBarMessage);
+    void sendBossBar(EssentialsPlugin plugin, Player player, BossBarMessage bossBarMessage, Object... args);
 
     /**
      * Kicks a player from the server with a specified message.

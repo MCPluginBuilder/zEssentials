@@ -81,6 +81,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         MigrationManager.registerMigration(new CreateUserEconomyMigration());
         MigrationManager.registerMigration(new CreateEconomyTransactionMigration());
         MigrationManager.registerMigration(new CreateUserHomeTableMigration());
+        MigrationManager.registerMigration(new CreateUserIgnoreTableMigration());
         MigrationManager.registerMigration(new CreateSanctionsTableMigration());
         MigrationManager.registerMigration(new UpdateUserTableAddSanctionColumns());
         MigrationManager.registerMigration(new CreateChatMessageMigration());
@@ -95,6 +96,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         MigrationManager.registerMigration(new CreatePlayerSlots());
         MigrationManager.registerMigration(new UpdateUserTableAddFreezeColumn());
         MigrationManager.registerMigration(new UpdateUserTableAddFlyColumn());
+        MigrationManager.registerMigration(new UpdateUserTableAddPlayerTimeWeatherColumns());
         MigrationManager.registerMigration(new UpdateEconomyTransactionAddColumn());
         MigrationManager.registerMigration(new CreateLinkCodeMigrations());
         MigrationManager.registerMigration(new CreateLinkAccountMigration());
@@ -116,6 +118,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         this.repositories.register(UserEconomyRepository.class);
         this.repositories.register(EconomyTransactionsRepository.class);
         this.repositories.register(UserHomeRepository.class);
+        this.repositories.register(UserIgnoreRepository.class);
         this.repositories.register(UserSanctionRepository.class);
         this.repositories.register(ChatMessagesRepository.class);
         this.repositories.register(CommandsRepository.class);
@@ -254,6 +257,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
                 user.setCooldowns(with(UserCooldownsRepository.class).select(uniqueId));
                 user.setEconomies(with(UserEconomyRepository.class).select(uniqueId));
                 user.setHomes(with(UserHomeRepository.class).select(uniqueId));
+                user.setIgnoredPlayers(with(UserIgnoreRepository.class).select(uniqueId));
                 user.setPowerTools(with(UserPowerToolsRepository.class).select(uniqueId).stream().collect(Collectors.toMap(PowerToolsDTO::material, PowerToolsDTO::command, (a, b) -> b, LinkedHashMap::new)));
                 user.setMailBoxItems(with(UserMailBoxRepository.class).select(uniqueId));
                 user.setVoteSites(with(VoteSiteRepository.class).select(uniqueId));
@@ -492,6 +496,16 @@ public class SqlStorage extends StorageHelper implements IStorage {
     @Override
     public void getHomes(UUID uuid, Consumer<List<Home>> consumer) {
         async(() -> consumer.accept(with(UserHomeRepository.class).getHomes(uuid)));
+    }
+
+    @Override
+    public void addIgnore(UUID uniqueId, UUID ignoredId) {
+        async(uniqueId, () -> with(UserIgnoreRepository.class).upsert(uniqueId, ignoredId));
+    }
+
+    @Override
+    public void removeIgnore(UUID uniqueId, UUID ignoredId) {
+        async(() -> with(UserIgnoreRepository.class).delete(uniqueId, ignoredId));
     }
 
     @Override
@@ -742,6 +756,11 @@ public class SqlStorage extends StorageHelper implements IStorage {
     @Override
     public long getFlySeconds(UUID uniqueId) {
         return with(UserRepository.class).selectFly(uniqueId);
+    }
+
+    @Override
+    public void updatePlayerTimeWeather(UUID uniqueId, long playerTime, String playerWeather) {
+        async(uniqueId, () -> with(UserRepository.class).updatePlayerTimeWeather(uniqueId, playerTime, playerWeather));
     }
 
     @Override

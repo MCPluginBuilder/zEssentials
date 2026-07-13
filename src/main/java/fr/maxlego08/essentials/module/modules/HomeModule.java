@@ -220,14 +220,29 @@ public class HomeModule extends ZModule implements HomeManager {
         IStorage iStorage = this.plugin.getStorageManager().getStorage();
         iStorage.fetchUniqueId(username, uuid -> {
 
-            var user = getUser(uuid);
-            if (user != null) {
-                user.removeHome(homeName);
-            } else {
-                iStorage.deleteHome(uuid, homeName);
+            if (uuid == null) {
+                message(sender, Message.PLAYER_NOT_FOUND, "%player%", username);
+                return;
             }
 
-            message(sender, Message.COMMAND_HOME_ADMIN_DELETE, "%name%", homeName, "%player%", username);
+            var user = getUser(uuid);
+            if (user != null) {
+                if (user.getHome(homeName).isEmpty()) {
+                    message(sender, Message.COMMAND_HOME_DOESNT_EXIST, "%name%", homeName);
+                    return;
+                }
+                user.removeHome(homeName);
+                message(sender, Message.COMMAND_HOME_ADMIN_DELETE, "%name%", homeName, "%player%", username);
+            } else {
+                iStorage.getHome(uuid, homeName, optional -> {
+                    if (optional.isEmpty()) {
+                        message(sender, Message.COMMAND_HOME_DOESNT_EXIST, "%name%", homeName);
+                        return;
+                    }
+                    iStorage.deleteHome(uuid, homeName);
+                    message(sender, Message.COMMAND_HOME_ADMIN_DELETE, "%name%", homeName, "%player%", username);
+                });
+            }
         });
     }
 

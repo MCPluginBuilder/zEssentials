@@ -214,6 +214,22 @@ public interface IStorage {
     void getHomes(UUID uuid, Consumer<List<Home>> consumer);
 
     /**
+     * Adds a player to the ignore list of a user.
+     *
+     * @param uniqueId  the UUID of the user who is ignoring
+     * @param ignoredId the UUID of the ignored player
+     */
+    void addIgnore(UUID uniqueId, UUID ignoredId);
+
+    /**
+     * Removes a player from the ignore list of a user.
+     *
+     * @param uniqueId  the UUID of the user
+     * @param ignoredId the UUID of the player to stop ignoring
+     */
+    void removeIgnore(UUID uniqueId, UUID ignoredId);
+
+    /**
      * Inserts a sanction for a user.
      *
      * @param sanction the sanction to insert
@@ -563,6 +579,15 @@ public interface IStorage {
      * @return the fly seconds
      */
     long getFlySeconds(UUID uniqueId);
+
+    /**
+     * Updates the persisted per-player time and weather (used by /ptime and /pweather).
+     *
+     * @param uniqueId      the UUID of the user
+     * @param playerTime    the fixed player time in ticks (0 = none)
+     * @param playerWeather the fixed player weather ("DOWNFALL" or null = none)
+     */
+    void updatePlayerTimeWeather(UUID uniqueId, long playerTime, String playerWeather);
 
     /**
      * Deletes world data.

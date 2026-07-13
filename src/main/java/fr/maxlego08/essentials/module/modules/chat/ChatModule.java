@@ -22,12 +22,14 @@ import fr.maxlego08.essentials.storage.ConfigStorage;
 import fr.maxlego08.essentials.zutils.utils.TimerBuilder;
 import fr.maxlego08.essentials.zutils.utils.paper.PaperComponent;
 import fr.maxlego08.menu.api.engine.Pagination;
+import fr.maxlego08.menu.api.sound.SoundOption;
+import fr.maxlego08.menu.hooks.xseries.XSound;
+import fr.maxlego08.menu.sound.ZSoundOption;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -59,7 +61,6 @@ public class ChatModule extends ZModule {
     private ChatDisplay pingDisplay;
     private String alphanumericRegex;
     private String linkRegex;
-    private String itemaddersFontRegex;
     private String pubRegex;
     private String defaultChatFormat;
     private String moderatorAction;
@@ -70,12 +71,10 @@ public class ChatModule extends ZModule {
     private Pattern playerNamePattern;
     private Pattern alphanumericPattern;
     private Pattern linkPattern;
-    private Pattern fontPattern;
     private Pattern floodRegex;
     private Pattern pubPattern;
     private boolean enableAlphanumericRegex;
     private boolean enableLinkRegex;
-    private boolean enableItemaddersFontRegex;
     private boolean enableChatDynamicCooldown;
     private boolean enableSameMessageCancel;
     private boolean enableChatFormat;
@@ -88,7 +87,7 @@ public class ChatModule extends ZModule {
     private double capsThreshold;
     private long[] chatCooldownArray;
     private boolean enablePlayerPingSound;
-    private Sound playerPingSound;
+    private String playerPingSound;
     private String playerPingColor;
     private String playerPingColorOther;
     private float playerPingSoundVolume;
@@ -107,7 +106,6 @@ public class ChatModule extends ZModule {
 
         this.alphanumericPattern = Pattern.compile(or(this.alphanumericRegex, "^[a-zA-Z0-9_.?!^¨%ù*&é\"#'{(\\[-|èêë`\\\\çà)\\]=}ûî+<>:²€$/\\-,-â@;ô ]+$"));
         this.linkPattern = Pattern.compile(or(this.linkRegex, "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)"));
-        this.fontPattern = Pattern.compile(or(this.itemaddersFontRegex, "(?<=:)(.*?)(?=\\s*\\:)"));
         this.floodRegex = Pattern.compile(or(this.antiFloodRegex, "(.)\\1{3,}"));
         this.pubPattern = Pattern.compile(or(this.pubRegex, ".*(§[0-9a-fk-or]|#[0-9a-fA-F]{6}|%[^%]+%|<[^>]+>).*"));
         this.chatCooldownArray = this.chatCooldowns.stream().flatMapToLong(cooldown -> LongStream.of(cooldown.cooldown(), cooldown.messages())).toArray();
@@ -115,7 +113,14 @@ public class ChatModule extends ZModule {
 
         this.chatDisplays.clear();
         if (this.enablePing) {
-            this.pingDisplay = new PlayerPingDisplay(this.playerPingColor, this.playerPingColorOther, this.playerPingSound, this.playerPingSoundVolume, this.playerPingSoundPitch);
+            SoundOption pingSoundOption = null;
+            // Resolve the sound cross-version via XSound. Since Paper 1.21.3+ org.bukkit.Sound is an interface
+            // (no longer an enum), the reflection config loader can no longer map it, so we resolve it manually.
+            if (this.enablePlayerPingSound && this.playerPingSound != null && !this.playerPingSound.isEmpty()) {
+                Optional<XSound> xSound = XSound.of(this.playerPingSound);
+                pingSoundOption = new ZSoundOption(xSound.orElse(null), "MASTER", this.playerPingSound, this.playerPingSoundPitch, this.playerPingSoundVolume, xSound.isEmpty());
+            }
+            this.pingDisplay = new PlayerPingDisplay(this.plugin, this.playerPingColor, this.playerPingColorOther, pingSoundOption);
         }
 
         Pattern pattern = Pattern.compile("[!?#]?[a-z0-9_-]*");

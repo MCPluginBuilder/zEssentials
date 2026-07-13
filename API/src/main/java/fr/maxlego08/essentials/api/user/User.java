@@ -5,6 +5,7 @@ import fr.maxlego08.essentials.api.discord.DiscordAccount;
 import fr.maxlego08.essentials.api.dto.CooldownDTO;
 import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
+import fr.maxlego08.essentials.api.dto.IgnoreDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
@@ -106,6 +107,36 @@ public interface User {
      * @return true if the user is ignoring the specified user, false otherwise.
      */
     boolean isIgnore(UUID uniqueId);
+
+    /**
+     * Adds a player to this user's ignore list.
+     *
+     * @param uniqueId the UUID of the player to ignore
+     * @return true if the player was added, false if already ignored
+     */
+    boolean addIgnore(UUID uniqueId);
+
+    /**
+     * Removes a player from this user's ignore list.
+     *
+     * @param uniqueId the UUID of the player to stop ignoring
+     * @return true if the player was removed, false if not ignored
+     */
+    boolean removeIgnore(UUID uniqueId);
+
+    /**
+     * Gets the list of players ignored by this user.
+     *
+     * @return the list of ignored player UUIDs
+     */
+    List<UUID> getIgnoredPlayers();
+
+    /**
+     * Sets the list of ignored players from the provided ignore data transfer objects.
+     *
+     * @param ignoredPlayers the ignore data transfer objects
+     */
+    void setIgnoredPlayers(List<IgnoreDTO> ignoredPlayers);
 
     /**
      * Gets the teleport request sent to the user.
@@ -1006,6 +1037,42 @@ public interface User {
      * @param seconds the number of seconds to remove from the user's fly time
      */
     void removeFlySeconds(long seconds);
+
+    /**
+     * Gets the persisted fixed player time in ticks (set via /ptime). 0 means no override.
+     *
+     * @return the fixed player time in ticks
+     */
+    long getPlayerTime();
+
+    /**
+     * Sets and persists the fixed player time in ticks (set via /ptime). 0 clears the override.
+     *
+     * @param playerTime the fixed player time in ticks
+     */
+    void setPlayerTime(long playerTime);
+
+    /**
+     * Gets the persisted fixed player weather (set via /pweather). null means no override.
+     *
+     * @return the fixed player weather ("DOWNFALL") or null
+     */
+    String getPlayerWeather();
+
+    /**
+     * Sets and persists the fixed player weather (set via /pweather). null clears the override.
+     *
+     * @param playerWeather the fixed player weather ("DOWNFALL") or null
+     */
+    void setPlayerWeather(String playerWeather);
+
+    /**
+     * Loads the persisted player time and weather without persisting them back (used by JSON storage on load).
+     *
+     * @param playerTime    the fixed player time in ticks
+     * @param playerWeather the fixed player weather or null
+     */
+    void loadPlayerTimeWeather(long playerTime, String playerWeather);
 
     /**
      * Retrieves the linked Discord account for the user.

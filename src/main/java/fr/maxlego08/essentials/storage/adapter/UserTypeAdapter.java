@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import fr.maxlego08.essentials.api.EssentialsPlugin;
 import fr.maxlego08.essentials.api.dto.CooldownDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
+import fr.maxlego08.essentials.api.dto.IgnoreDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.user.Option;
@@ -77,6 +78,17 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         }
         out.endArray();
 
+        out.name("ignored-players").beginArray();
+        for (UUID ignored : value.getIgnoredPlayers()) {
+            out.value(ignored.toString());
+        }
+        out.endArray();
+
+        out.name("player-time").value(value.getPlayerTime());
+        if (value.getPlayerWeather() != null) {
+            out.name("player-weather").value(value.getPlayerWeather());
+        }
+
         out.name("power-tools").beginObject();
         for (Map.Entry<Material, String> entry : value.getPowerTools().entrySet()) {
             out.name(entry.getKey().name()).value(entry.getValue());
@@ -95,6 +107,9 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         Map<String, Long> cooldowns = new HashMap<>();
         Map<String, BigDecimal> balances = new HashMap<>();
         List<HomeDTO> homeDTOS = new ArrayList<>();
+        List<IgnoreDTO> ignoredPlayers = new ArrayList<>();
+        long playerTime = 0;
+        String playerWeather = null;
         SafeLocation lastLocation = null;
 
         in.beginObject();
@@ -152,6 +167,15 @@ public class UserTypeAdapter extends TypeAdapter<User> {
                     }
                     in.endArray();
                 }
+                case "ignored-players" -> {
+                    in.beginArray();
+                    while (in.hasNext()) {
+                        ignoredPlayers.add(new IgnoreDTO(UUID.fromString(in.nextString())));
+                    }
+                    in.endArray();
+                }
+                case "player-time" -> playerTime = in.nextLong();
+                case "player-weather" -> playerWeather = in.nextString();
 
             }
         }
@@ -169,6 +193,8 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         user.setCooldowns(cooldowns.entrySet().stream().map(entry -> new CooldownDTO(entry.getKey(), entry.getValue(), new Date())).collect(Collectors.toList()));
         user.setLastLocation(lastLocation);
         user.setHomes(homeDTOS);
+        user.setIgnoredPlayers(ignoredPlayers);
+        user.loadPlayerTimeWeather(playerTime, playerWeather);
         user.setPowerTools(powerTools);
         balances.forEach(user::setBalance);
 

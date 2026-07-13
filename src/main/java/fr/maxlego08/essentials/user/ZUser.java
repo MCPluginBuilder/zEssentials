@@ -50,6 +50,7 @@ public class ZUser extends ZUtils implements User {
     private final Map<Option, Boolean> options = new HashMap<>();
     private final Map<String, BigDecimal> balances = new HashMap<>();
     private final List<Home> homes = new ArrayList<>();
+    private final List<UUID> ignoredPlayers = new ArrayList<>();
     private final List<MailBoxItem> mailBoxItems = new ArrayList<>();
     private final DynamicCooldown dynamicCooldown = new DynamicCooldown();
     private final Selection selection = new ZSelection();
@@ -77,6 +78,8 @@ public class ZUser extends ZUtils implements User {
     private Map<String, Long> lastVotes = new HashMap<>();
     private Home currentDeleteHome;
     private long flySeconds;
+    private long playerTime;
+    private String playerWeather;
     private DiscordAccount discordAccount;
     private long lastActiveTime = System.currentTimeMillis();
     private boolean manualAfk;
@@ -126,7 +129,32 @@ public class ZUser extends ZUtils implements User {
 
     @Override
     public boolean isIgnore(UUID uniqueId) {
-        return false;
+        return this.ignoredPlayers.contains(uniqueId);
+    }
+
+    @Override
+    public boolean addIgnore(UUID uniqueId) {
+        if (this.ignoredPlayers.contains(uniqueId)) return false;
+        this.ignoredPlayers.add(uniqueId);
+        this.getStorage().addIgnore(this.uniqueId, uniqueId);
+        return true;
+    }
+
+    @Override
+    public boolean removeIgnore(UUID uniqueId) {
+        if (!this.ignoredPlayers.remove(uniqueId)) return false;
+        this.getStorage().removeIgnore(this.uniqueId, uniqueId);
+        return true;
+    }
+
+    @Override
+    public List<UUID> getIgnoredPlayers() {
+        return this.ignoredPlayers;
+    }
+
+    @Override
+    public void setIgnoredPlayers(List<IgnoreDTO> ignoredPlayers) {
+        this.ignoredPlayers.addAll(ignoredPlayers.stream().map(IgnoreDTO::ignored_id).toList());
     }
 
     @Override
@@ -941,6 +969,8 @@ public class ZUser extends ZUtils implements User {
         this.lastLocation = stringAsLocation(userDTO.last_location());
         this.freeze = userDTO.frozen() != null && userDTO.frozen();
         this.flySeconds = userDTO.fly_seconds();
+        this.playerTime = userDTO.player_time();
+        this.playerWeather = userDTO.player_weather();
     }
 
     @Override
@@ -1055,6 +1085,34 @@ public class ZUser extends ZUtils implements User {
     public void removeFlySeconds(long seconds) {
         this.flySeconds -= seconds;
         getStorage().upsertFlySeconds(this.uniqueId, this.flySeconds);
+    }
+
+    @Override
+    public long getPlayerTime() {
+        return this.playerTime;
+    }
+
+    @Override
+    public void setPlayerTime(long playerTime) {
+        this.playerTime = playerTime;
+        getStorage().updatePlayerTimeWeather(this.uniqueId, this.playerTime, this.playerWeather);
+    }
+
+    @Override
+    public String getPlayerWeather() {
+        return this.playerWeather;
+    }
+
+    @Override
+    public void setPlayerWeather(String playerWeather) {
+        this.playerWeather = playerWeather;
+        getStorage().updatePlayerTimeWeather(this.uniqueId, this.playerTime, this.playerWeather);
+    }
+
+    @Override
+    public void loadPlayerTimeWeather(long playerTime, String playerWeather) {
+        this.playerTime = playerTime;
+        this.playerWeather = playerWeather;
     }
 
     @Override

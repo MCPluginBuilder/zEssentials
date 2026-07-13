@@ -8,6 +8,7 @@ import fr.maxlego08.essentials.commands.commands.chat.CommandChatClear;
 import fr.maxlego08.essentials.commands.commands.chat.CommandChatDisable;
 import fr.maxlego08.essentials.commands.commands.chat.CommandChatEnable;
 import fr.maxlego08.essentials.commands.commands.chat.CommandChatHistory;
+import fr.maxlego08.essentials.commands.commands.chat.CommandPingSound;
 import fr.maxlego08.essentials.commands.commands.chat.CommandPub;
 import fr.maxlego08.essentials.commands.commands.chat.CommandShowItem;
 import fr.maxlego08.essentials.commands.commands.clearinventory.ClearInventoryCommand;
@@ -32,6 +33,7 @@ import fr.maxlego08.essentials.commands.commands.gamemode.CommandGameModeSurviva
 import fr.maxlego08.essentials.commands.commands.hologram.CommandHologram;
 import fr.maxlego08.essentials.commands.commands.home.CommandDelHome;
 import fr.maxlego08.essentials.commands.commands.home.CommandDelHomeConfirm;
+import fr.maxlego08.essentials.commands.commands.home.CommandDelHomeOther;
 import fr.maxlego08.essentials.commands.commands.home.CommandHome;
 import fr.maxlego08.essentials.commands.commands.home.CommandHomeList;
 import fr.maxlego08.essentials.commands.commands.home.CommandSetHome;
@@ -47,10 +49,13 @@ import fr.maxlego08.essentials.commands.commands.kits.CommandKitEditor;
 import fr.maxlego08.essentials.commands.commands.kits.CommandKitGive;
 import fr.maxlego08.essentials.commands.commands.kits.CommandShowKit;
 import fr.maxlego08.essentials.commands.commands.mail.CommandMail;
+import fr.maxlego08.essentials.commands.commands.messages.CommandIgnore;
+import fr.maxlego08.essentials.commands.commands.messages.CommandIgnoreList;
 import fr.maxlego08.essentials.commands.commands.messages.CommandMessage;
 import fr.maxlego08.essentials.commands.commands.messages.CommandMessageToggle;
 import fr.maxlego08.essentials.commands.commands.messages.CommandReply;
 import fr.maxlego08.essentials.commands.commands.messages.CommandSocialSpy;
+import fr.maxlego08.essentials.commands.commands.messages.CommandUnIgnore;
 import fr.maxlego08.essentials.commands.commands.teleport.CommandTpaHereToggle;
 import fr.maxlego08.essentials.commands.commands.teleport.CommandTpToggle;
 import fr.maxlego08.essentials.commands.commands.sanction.CommandBan;
@@ -216,6 +221,7 @@ public class CommandLoader {
         register("delhome", CommandDelHome.class, "hdelete", "hd");
         register("home", CommandHome.class, "h", "homes");
         register("home-list", CommandHomeList.class, "hlist");
+        register("delhome-other", CommandDelHomeOther.class, "delhomeother", "hdelother");
 
         register("freeze", CommandFreeze.class);
         register("ban", CommandBan.class);
@@ -234,6 +240,7 @@ public class CommandLoader {
         register("chatdisable", CommandChatDisable.class, "cd");
         register("broadcast", CommandChatBroadcast.class, "bc");
         register("showitem", CommandShowItem.class);
+        register("pingsound", CommandPingSound.class, "pingsounds");
 
         register("message", CommandMessage.class, "msg", "tell", "whisper", "m", "w");
         register("reply", CommandReply.class, "r");
@@ -241,6 +248,9 @@ public class CommandLoader {
         register("tptoggle", CommandTpToggle.class);
         register("tpaheretoggle", CommandTpaHereToggle.class);
         register("socialspy", CommandSocialSpy.class);
+        register("ignore", CommandIgnore.class);
+        register("unignore", CommandUnIgnore.class, "unignor");
+        register("ignorelist", CommandIgnoreList.class, "ignores");
 
         register("repair", CommandRepair.class, "fix");
         register("repairall", CommandRepairAll.class, "fixall");
