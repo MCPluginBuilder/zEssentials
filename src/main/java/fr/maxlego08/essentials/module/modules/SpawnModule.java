@@ -18,8 +18,9 @@ import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 public class SpawnModule extends ZModule {
 
-    private final String respawnListenerPriority = "normal";
-    private final String spawnJoinListenerPriority = "normal";
+    // Do not make those fields final, javac would inline the constant and the configuration would be ignored
+    private String respawnListenerPriority = "normal";
+    private String spawnJoinListenerPriority = "normal";
     private boolean respawnAtAnchor;
     private boolean respawnAtHome;
     private boolean respawnAtBed;

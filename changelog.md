@@ -6,6 +6,12 @@
 
 # Unreleased
 
+- Added display options for `/seen` in `modules/sanction/config.yml` — `seen-show-uuid`, `seen-show-ip`, `seen-show-last-location`, `seen-show-created-at` and `seen-show-playtime`. The IP address can now be hidden globally, even from operators: until now it was only protected by the `essentials.seen.show.ip` permission, which an operator always has
+- Fixed several configuration options being silently ignored: they were declared as `private final` fields with a constant initializer, so javac inlined them at compile time and the value read from the configuration file was never used
+    - Sanction module: `date-format`, `kick-default-reason`, `ban-default-reason`, `mute-default-reason`, `unmute-default-reason`, `unban-default-reason`
+    - Spawn module: `respawn-listener-priority` and `spawn-join-listener-priority` — the respawn and join listeners were always registered with the `NORMAL` priority instead of the configured one (`HIGHEST` by default)
+    - Worldedit module: `enable-color-visualisation` and `open-help-inventory`
+- Clarified the `/compact` and `/compactall` descriptions to mention their existing `/condense` and `/condenseall` aliases
 - Fixed the chat ping sound not playing on Paper 1.21.3+ — `org.bukkit.Sound` became an interface, so the ping sound is now resolved cross-version through the zMenu XSound API (like the teleportation sounds)
 - Fixed countdown/teleport placeholders (`%name%`, `%seconds%`, ...) showing as raw text when the message `type` is set to `TITLE` or `BOSSBAR` — internal placeholders are now resolved for every message type
 - Added `/pingsound` command (`/pingsounds` alias) to toggle the chat ping sound per player; the `enable-player-ping-sound` global toggle is now honored

@@ -312,7 +312,7 @@ description-afk: 切换挂机状态
 description-craft: 打开工作台
 description-enchanting: 打开附魔台
 description-invsee: 打开玩家的背包
-description-compact: 压缩材料
+description-compact: "将材料压缩成方块，别名：/blocks, /condense"
 description-hat: 给自己做一个漂亮的帽子
 description-tp: 传送到一名玩家
 description-tp-self: 将一名玩家传送到您的位置
@@ -384,7 +384,7 @@ description-lag-world: 显示世界中实体的详细统计
 description-lag-clear: 在世界或全局删除实体
 description-lag-clear-countdown: 在延迟后删除实体
 description-bottom: 传送到底部
-description-compact-all: 压缩库存中的物品
+description-compact-all: "压缩背包中的所有物品，别名：/blocksall, /condenseall"
 description-version: 显示插件版本
 description-kill-all: 杀死实体
 description-seen: 显示玩家信息
