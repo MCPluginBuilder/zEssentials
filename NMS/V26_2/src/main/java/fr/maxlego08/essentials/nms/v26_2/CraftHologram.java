@@ -23,7 +23,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -79,9 +79,10 @@ public class CraftHologram extends Hologram {
     public void create() {
         ServerLevel serverLevel = ((CraftWorld) location.getLocation().getWorld()).getHandle();
         switch (hologramType) {
-            case BLOCK -> this.display = new Display.BlockDisplay(EntityType.BLOCK_DISPLAY, serverLevel);
-            case ITEM -> this.display = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, serverLevel);
-            case TEXT -> this.display = new Display.TextDisplay(EntityType.TEXT_DISPLAY, serverLevel);
+            // Since 26.1 the built in entity types are declared in EntityTypes, not in EntityType
+            case BLOCK -> this.display = new Display.BlockDisplay(EntityTypes.BLOCK_DISPLAY, serverLevel);
+            case ITEM -> this.display = new Display.ItemDisplay(EntityTypes.ITEM_DISPLAY, serverLevel);
+            case TEXT -> this.display = new Display.TextDisplay(EntityTypes.TEXT_DISPLAY, serverLevel);
         }
 
         display.getEntityData().set((EntityDataAccessor<Integer>) ReflectionUtils.getStaticValue(Display.class, "DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID"), 1); // Transformation duration

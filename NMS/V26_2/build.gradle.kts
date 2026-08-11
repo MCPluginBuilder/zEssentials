@@ -19,5 +19,8 @@ java {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release = 25
+    // The Java 25 toolchain is required to read the Mojang-mapped 26.2 dev bundle, but the bytecode
+    // is emitted for Java 21: the shadow plugin remaps every class with ASM when shading, and its
+    // ASM version cannot read class file major version 69 (Java 25).
+    options.release = 21
 }

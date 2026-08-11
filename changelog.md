@@ -6,6 +6,8 @@
 
 # Unreleased
 
+- Fixed the build of the `NMS:V26_2` module: since Minecraft 26.1 the built in entity types are declared in `EntityTypes` and no longer in `EntityType`, so `EntityType.BLOCK_DISPLAY`, `ITEM_DISPLAY` and `TEXT_DISPLAY` could not be resolved anymore
+- Fixed `shadowJar` failing with `Unsupported class file major version 69` — the `NMS:V26_2` module still builds with a Java 25 toolchain (needed to read the 26.2 dev bundle) but now emits Java 21 bytecode, which the ASM version bundled with the shadow plugin can remap
 - Added a new **custom commands** module (`modules/customcommands/config.yml`) to create your own commands without any other plugin, for `/discord`, `/map`, `/vote`, `/store`, `/updates`...
     - Each command can define `aliases`, a `permission`, a `description`, a `cooldown` in seconds (bypassed with `essentials.bypass.cooldown`) and a list of `messages`
     - `type` selects how the content is displayed: `TCHAT`, `CENTER`, `ACTION`, `TITLE`, `BOSSBAR` or `NONE`
