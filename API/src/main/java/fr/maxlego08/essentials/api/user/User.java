@@ -5,6 +5,7 @@ import fr.maxlego08.essentials.api.discord.DiscordAccount;
 import fr.maxlego08.essentials.api.dto.CooldownDTO;
 import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
+import fr.maxlego08.essentials.api.dto.HomeShareDTO;
 import fr.maxlego08.essentials.api.dto.IgnoreDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -589,6 +591,53 @@ public interface User {
      * @return true if the user has a home location with the specified name, false otherwise.
      */
     boolean isHomeName(String homeName);
+
+    /**
+     * Persists the public/category/favorite state of the given home.
+     *
+     * @param home the home to persist.
+     */
+    void saveHomeSocial(Home home);
+
+    /**
+     * Loads the home shares from the given DTOs (in-memory only, no persistence).
+     *
+     * @param shares the shares to load.
+     */
+    void setHomeShares(List<HomeShareDTO> shares);
+
+    /**
+     * Gets the players a specific home is shared with.
+     *
+     * @param homeName the home name.
+     * @return the set of target UUIDs (never null).
+     */
+    Set<UUID> getHomeShares(String homeName);
+
+    /**
+     * Gets all home shares of this user (home name -&gt; target UUIDs).
+     *
+     * @return the map of shares.
+     */
+    Map<String, Set<UUID>> getAllHomeShares();
+
+    /**
+     * Shares a home with a target player.
+     *
+     * @param homeName the home name.
+     * @param target   the target UUID.
+     * @return true if the share was added, false if it already existed.
+     */
+    boolean addHomeShare(String homeName, UUID target);
+
+    /**
+     * Stops sharing a home with a target player.
+     *
+     * @param homeName the home name.
+     * @param target   the target UUID.
+     * @return true if the share was removed, false if it did not exist.
+     */
+    boolean removeHomeShare(String homeName, UUID target);
 
     /**
      * Gets the active ban ID for the user.

@@ -116,6 +116,18 @@ public interface HomeManager {
     void teleport(User user, String username, String homeName);
 
     /**
+     * Teleports the given user to another player's home if it is public or shared with them.
+     * <p>
+     * Unlike {@link #teleport(User, String, String)} this does not require the admin permission:
+     * access is granted when the home is public or explicitly shared with the visiting user.
+     *
+     * @param user     the visiting user.
+     * @param username the username of the player owning the home.
+     * @param homeName the name of the home to visit.
+     */
+    void visitHome(User user, String username, String homeName);
+
+    /**
      * Deletes the home with the given name from the given player.
      * <p>
      * If the home does not exist, this method does nothing.

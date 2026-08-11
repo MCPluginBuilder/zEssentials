@@ -11,6 +11,7 @@ import fr.maxlego08.essentials.api.dto.EconomyTransactionDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
 import fr.maxlego08.essentials.api.dto.PlayerSlotDTO;
+import fr.maxlego08.essentials.api.dto.PublicHomeDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
 import fr.maxlego08.essentials.api.dto.StepDTO;
 import fr.maxlego08.essentials.api.dto.UserDTO;
@@ -231,13 +232,11 @@ public class JsonStorage extends StorageHelper implements IStorage {
         User user = getUser(uniqueId);
         if (user == null) {
             user = createOrLoad(uniqueId, "");
-            user.setHomes(List.of(new HomeDTO(locationAsString(home.getLocation()), home.getName(), home.getMaterial() == null ? null : home.getMaterial().name())));
-            User finalUser = user;
-            this.plugin.getScheduler().runAsync(wrappedTask -> {
-                Persist persist = this.plugin.getPersist();
-                persist.save(finalUser, getUserFile(uniqueId));
-            });
-            return;
+        }
+        // Ensure the home is present in the in-memory list before saving.
+        // The normal /sethome path already added it; the import path calls this directly without pre-adding.
+        if (user.getHome(home.getName()).isEmpty()) {
+            user.getHomes().add(home);
         }
         this.saveFileAsync(uniqueId);
     }
@@ -266,6 +265,70 @@ public class JsonStorage extends StorageHelper implements IStorage {
     @Override
     public void getHomes(UUID uuid, Consumer<List<Home>> consumer) {
         consumer.accept(createOrLoad(uuid, "").getHomes());
+    }
+
+    @Override
+    public void updateHomeSocial(UUID uniqueId, Home home) {
+        this.saveFileAsync(uniqueId);
+    }
+
+    @Override
+    public void addHomeShare(UUID owner, String homeName, UUID target) {
+        this.saveFileAsync(owner);
+    }
+
+    @Override
+    public void removeHomeShare(UUID owner, String homeName, UUID target) {
+        this.saveFileAsync(owner);
+    }
+
+    @Override
+    public void removeAllHomeShares(UUID owner, String homeName) {
+        this.saveFileAsync(owner);
+    }
+
+    @Override
+    public void getPublicHomes(Consumer<List<PublicHomeDTO>> consumer) {
+        async(() -> {
+            List<PublicHomeDTO> result = new ArrayList<>();
+            java.util.Set<UUID> seen = new java.util.HashSet<>();
+
+            // Online / cached users first (freshest data)
+            for (User user : this.users.values()) {
+                seen.add(user.getUniqueId());
+                collectPublicHomes(user, result);
+            }
+
+            // Then scan the offline user files on disk
+            File[] files = getFolder().listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+            if (files != null) {
+                for (File file : files) {
+                    try {
+                        UUID uuid = UUID.fromString(file.getName().substring(0, file.getName().length() - 5));
+                        if (!seen.add(uuid)) continue;
+                        User user = this.plugin.getPersist().load(User.class, file);
+                        if (user != null) collectPublicHomes(user, result);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+
+            consumer.accept(result);
+        });
+    }
+
+    private void collectPublicHomes(User user, List<PublicHomeDTO> result) {
+        for (Home home : user.getHomes()) {
+            if (home.isPublic()) {
+                result.add(new PublicHomeDTO(user.getUniqueId(), home.getName(), locationAsString(home.getLocation()), home.getMaterial() == null ? null : home.getMaterial().name(), home.getCategory()));
+            }
+        }
+    }
+
+    @Override
+    public void isHomeSharedWith(UUID owner, String homeName, UUID target, Consumer<Boolean> consumer) {
+        User user = createOrLoad(owner, "");
+        consumer.accept(user.getHomeShares(homeName).contains(target));
     }
 
     @Override

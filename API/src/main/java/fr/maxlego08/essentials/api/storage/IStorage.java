@@ -9,6 +9,7 @@ import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.EconomyTransactionDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
 import fr.maxlego08.essentials.api.dto.PlayerSlotDTO;
+import fr.maxlego08.essentials.api.dto.PublicHomeDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
 import fr.maxlego08.essentials.api.dto.StepDTO;
 import fr.maxlego08.essentials.api.dto.UserDTO;
@@ -212,6 +213,57 @@ public interface IStorage {
      * @param consumer the consumer to apply to the list of homes
      */
     void getHomes(UUID uuid, Consumer<List<Home>> consumer);
+
+    /**
+     * Updates the public/category/favorite state of a home.
+     *
+     * @param uniqueId the UUID of the home owner
+     * @param home     the home to persist
+     */
+    void updateHomeSocial(UUID uniqueId, Home home);
+
+    /**
+     * Shares a home with a target player.
+     *
+     * @param owner    the UUID of the home owner
+     * @param homeName the name of the home
+     * @param target   the UUID of the player the home is shared with
+     */
+    void addHomeShare(UUID owner, String homeName, UUID target);
+
+    /**
+     * Removes a home share.
+     *
+     * @param owner    the UUID of the home owner
+     * @param homeName the name of the home
+     * @param target   the UUID of the player to stop sharing with
+     */
+    void removeHomeShare(UUID owner, String homeName, UUID target);
+
+    /**
+     * Removes all shares of a given home (used when the home is deleted).
+     *
+     * @param owner    the UUID of the home owner
+     * @param homeName the name of the home
+     */
+    void removeAllHomeShares(UUID owner, String homeName);
+
+    /**
+     * Retrieves all public homes across every player.
+     *
+     * @param consumer the consumer to apply to the list of public homes
+     */
+    void getPublicHomes(Consumer<List<PublicHomeDTO>> consumer);
+
+    /**
+     * Checks asynchronously whether a home is shared with a given target.
+     *
+     * @param owner    the UUID of the home owner
+     * @param homeName the name of the home
+     * @param target   the UUID of the potential target
+     * @param consumer the consumer to apply to the result
+     */
+    void isHomeSharedWith(UUID owner, String homeName, UUID target, Consumer<Boolean> consumer);
 
     /**
      * Adds a player to the ignore list of a user.

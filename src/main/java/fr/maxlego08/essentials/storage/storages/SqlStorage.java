@@ -82,6 +82,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         MigrationManager.registerMigration(new CreateEconomyTransactionMigration());
         MigrationManager.registerMigration(new CreateUserHomeTableMigration());
         MigrationManager.registerMigration(new CreateUserIgnoreTableMigration());
+        MigrationManager.registerMigration(new CreateUserHomeShareTableMigration());
         MigrationManager.registerMigration(new CreateSanctionsTableMigration());
         MigrationManager.registerMigration(new UpdateUserTableAddSanctionColumns());
         MigrationManager.registerMigration(new CreateChatMessageMigration());
@@ -97,6 +98,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         MigrationManager.registerMigration(new UpdateUserTableAddFreezeColumn());
         MigrationManager.registerMigration(new UpdateUserTableAddFlyColumn());
         MigrationManager.registerMigration(new UpdateUserTableAddPlayerTimeWeatherColumns());
+        MigrationManager.registerMigration(new UpdateUserHomeTableAddSocialColumns());
         MigrationManager.registerMigration(new UpdateEconomyTransactionAddColumn());
         MigrationManager.registerMigration(new CreateLinkCodeMigrations());
         MigrationManager.registerMigration(new CreateLinkAccountMigration());
@@ -119,6 +121,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         this.repositories.register(EconomyTransactionsRepository.class);
         this.repositories.register(UserHomeRepository.class);
         this.repositories.register(UserIgnoreRepository.class);
+        this.repositories.register(UserHomeShareRepository.class);
         this.repositories.register(UserSanctionRepository.class);
         this.repositories.register(ChatMessagesRepository.class);
         this.repositories.register(CommandsRepository.class);
@@ -257,6 +260,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
                 user.setCooldowns(with(UserCooldownsRepository.class).select(uniqueId));
                 user.setEconomies(with(UserEconomyRepository.class).select(uniqueId));
                 user.setHomes(with(UserHomeRepository.class).select(uniqueId));
+                user.setHomeShares(with(UserHomeShareRepository.class).selectByOwner(uniqueId));
                 user.setIgnoredPlayers(with(UserIgnoreRepository.class).select(uniqueId));
                 user.setPowerTools(with(UserPowerToolsRepository.class).select(uniqueId).stream().collect(Collectors.toMap(PowerToolsDTO::material, PowerToolsDTO::command, (a, b) -> b, LinkedHashMap::new)));
                 user.setMailBoxItems(with(UserMailBoxRepository.class).select(uniqueId));
@@ -496,6 +500,36 @@ public class SqlStorage extends StorageHelper implements IStorage {
     @Override
     public void getHomes(UUID uuid, Consumer<List<Home>> consumer) {
         async(() -> consumer.accept(with(UserHomeRepository.class).getHomes(uuid)));
+    }
+
+    @Override
+    public void updateHomeSocial(UUID uniqueId, Home home) {
+        async(uniqueId, () -> with(UserHomeRepository.class).updateSocial(uniqueId, home));
+    }
+
+    @Override
+    public void addHomeShare(UUID owner, String homeName, UUID target) {
+        async(owner, () -> with(UserHomeShareRepository.class).upsert(owner, homeName, target));
+    }
+
+    @Override
+    public void removeHomeShare(UUID owner, String homeName, UUID target) {
+        async(() -> with(UserHomeShareRepository.class).delete(owner, homeName, target));
+    }
+
+    @Override
+    public void removeAllHomeShares(UUID owner, String homeName) {
+        async(() -> with(UserHomeShareRepository.class).deleteAll(owner, homeName));
+    }
+
+    @Override
+    public void getPublicHomes(Consumer<List<PublicHomeDTO>> consumer) {
+        async(() -> consumer.accept(with(UserHomeRepository.class).selectPublicHomes()));
+    }
+
+    @Override
+    public void isHomeSharedWith(UUID owner, String homeName, UUID target, Consumer<Boolean> consumer) {
+        async(() -> consumer.accept(with(UserHomeShareRepository.class).isSharedWith(owner, homeName, target)));
     }
 
     @Override

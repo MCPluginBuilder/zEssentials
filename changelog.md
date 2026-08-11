@@ -18,6 +18,20 @@
 - Added persistence for `/ptime` and `/pweather` — the per-player time and weather are now saved and re-applied automatically when the player reconnects
 - Fixed private messages to a vanished player revealing their presence when they had ignored the sender — the vanish check now takes precedence over the ignore check
 - Removed the non-functional `itemadders-font-regex` chat config options (the feature was never wired) and corrected the `/sc` reference in the chat config comment (it is `/chathistory`)
+- Added a Homes system enhancement (see `modules/home/config.yml`):
+    - **Public homes** — `/homepublic <home>` makes a home visitable by everyone, `/publichomes [player]` lists them (in chat or a paginated GUI via `public-homes-display: CHAT|INVENTORY`); visit with `/home <player>:<home>` (permissions `essentials.home.public`, `essentials.home.visit`, configurable `max-public-homes`)
+    - **Shared homes** — `/homeshare <home> <player>`, `/homeunshare`, `/homeshares` to share a home with specific players (online or offline); shares are purged when the home is deleted (permission `essentials.home.share`, `max-shared-per-home`)
+    - **Categories** — `/homecategory <home> <category>` to organise homes (permission `essentials.home.category`), placeholder `%category%`
+    - **Favorites** — `/homefavorite <home>` to mark a home as favorite; `favorite-first` shows favorites at the top (permission `essentials.home.favorite`), placeholder `%favorite%`
+    - **Preview** — optional `enable-home-preview` shows a clickable confirmation before teleporting
+    - **Import** — `/homeimport essentialsx` imports homes from EssentialsX (permission `essentials.home.import`)
+    - Persistence via new `is_public`/`category`/`is_favorite` columns on `user_homes` and a new `user_home_shares` table (MySQL and JSON storage)
+- Updated zMenu to `1.1.1.6` and added support for Minecraft/Paper **26.2**:
+    - Added a new `NMS:V26_2` module (built against the `26.2.build.+` dev bundle, compiled with Java 25 which Minecraft 26.x requires)
+    - Migrated the whole plugin to **Mojang mappings** — Paper 26.1+ removed Spigot reobfuscation, so every NMS module now uses `MOJANG_PRODUCTION` and the shaded jar is marked `paperweight-mappings-namespace: mojang`
+    - **zEssentials is now Paper-only and requires Paper 1.20.5+ — Minecraft 1.20.4 is no longer supported** (Mojang-mapped plugins only load on 1.20.5+)
+    - Replaced the removed zMenu `NmsVersion` enum with the new `MinecraftVersion` API for version detection and NMS package resolution (`NmsVersionUtils`)
+    - Bumped `paperweight-userdev` to `2.0.0-beta.21`
 
 # 1.0.3.7
 

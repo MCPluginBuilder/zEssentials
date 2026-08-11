@@ -5,8 +5,8 @@ import fr.maxlego08.essentials.api.commands.CommandResultType;
 import fr.maxlego08.essentials.api.commands.Permission;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.nms.PlayerUtil;
+import fr.maxlego08.essentials.zutils.utils.NmsVersionUtils;
 import fr.maxlego08.essentials.zutils.utils.commands.VCommand;
-import fr.maxlego08.menu.common.utils.nms.NmsVersion;
 import org.bukkit.OfflinePlayer;
 
 import java.lang.reflect.Constructor;
@@ -35,7 +35,7 @@ public class CommandEnderSee extends VCommand {
 
             if (!hasPermission(sender, Permission.ESSENTIALS_ENDERSEE_OFFLINE)) return CommandResultType.NO_PERMISSION;
 
-            String version = NmsVersion.getCurrentVersion().name().replace("V_", "v");
+            String version = NmsVersionUtils.getNmsPackage();
             String className = String.format("fr.maxlego08.essentials.nms.%s.PlayerUtils", version);
 
             try {

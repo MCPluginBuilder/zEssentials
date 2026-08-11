@@ -50,6 +50,7 @@ public class ZUser extends ZUtils implements User {
     private final Map<Option, Boolean> options = new HashMap<>();
     private final Map<String, BigDecimal> balances = new HashMap<>();
     private final List<Home> homes = new ArrayList<>();
+    private final Map<String, Set<UUID>> homeShares = new HashMap<>();
     private final List<UUID> ignoredPlayers = new ArrayList<>();
     private final List<MailBoxItem> mailBoxItems = new ArrayList<>();
     private final DynamicCooldown dynamicCooldown = new DynamicCooldown();
@@ -698,13 +699,17 @@ public class ZUser extends ZUtils implements User {
             return false;
         }
 
-        AtomicReference<Material> material = new AtomicReference<>(null);
-        getHome(name).ifPresent(home -> material.set(home.getMaterial()));
+        // Preserve the existing home's material and social state (public/category/favorite) when overwriting
+        Optional<Home> existing = getHome(name);
+        Material material = existing.map(Home::getMaterial).orElse(null);
+        boolean isPublic = existing.map(Home::isPublic).orElse(false);
+        String category = existing.map(Home::getCategory).orElse(null);
+        boolean favorite = existing.map(Home::isFavorite).orElse(false);
 
         // Delete home with the same name before
         this.homes.removeIf(home -> home.getName().equalsIgnoreCase(name));
 
-        Home home = new ZHome(new SafeLocation(location), name, material.get());
+        Home home = new ZHome(new SafeLocation(location), name, material, isPublic, category, favorite);
         this.homes.add(home);
         this.getStorage().upsertHome(this.uniqueId, home);
 
@@ -725,13 +730,53 @@ public class ZUser extends ZUtils implements User {
     public void setHomes(List<HomeDTO> homeDTOS) {
         this.homes.addAll(homeDTOS.stream().map(homeDTO -> {
             try {
-                return new ZHome(stringAsLocation(homeDTO.location()), homeDTO.name(), homeDTO.material() == null ? null : Material.valueOf(homeDTO.material()));
+                boolean isPublic = homeDTO.is_public() != null && homeDTO.is_public();
+                boolean favorite = homeDTO.is_favorite() != null && homeDTO.is_favorite();
+                return new ZHome(stringAsLocation(homeDTO.location()), homeDTO.name(), homeDTO.material() == null ? null : Material.valueOf(homeDTO.material()), isPublic, homeDTO.category(), favorite);
             } catch (Exception exception) {
                 plugin.getLogger().severe("Impossible to load the home " + homeDTO.name() + " for " + this.name + " Debug: " + homeDTO);
                 exception.printStackTrace();
             }
             return null;
         }).filter(Objects::nonNull).toList());
+    }
+
+    @Override
+    public void saveHomeSocial(Home home) {
+        this.getStorage().updateHomeSocial(this.uniqueId, home);
+    }
+
+    @Override
+    public void setHomeShares(List<HomeShareDTO> shares) {
+        for (HomeShareDTO share : shares) {
+            this.homeShares.computeIfAbsent(share.home_name().toLowerCase(), k -> new HashSet<>()).add(share.target_id());
+        }
+    }
+
+    @Override
+    public Set<UUID> getHomeShares(String homeName) {
+        return this.homeShares.getOrDefault(homeName.toLowerCase(), new HashSet<>());
+    }
+
+    @Override
+    public Map<String, Set<UUID>> getAllHomeShares() {
+        return this.homeShares;
+    }
+
+    @Override
+    public boolean addHomeShare(String homeName, UUID target) {
+        Set<UUID> targets = this.homeShares.computeIfAbsent(homeName.toLowerCase(), k -> new HashSet<>());
+        if (!targets.add(target)) return false;
+        this.getStorage().addHomeShare(this.uniqueId, homeName, target);
+        return true;
+    }
+
+    @Override
+    public boolean removeHomeShare(String homeName, UUID target) {
+        Set<UUID> targets = this.homeShares.get(homeName.toLowerCase());
+        if (targets == null || !targets.remove(target)) return false;
+        this.getStorage().removeHomeShare(this.uniqueId, homeName, target);
+        return true;
     }
 
     @Override
@@ -742,7 +787,9 @@ public class ZUser extends ZUtils implements User {
     @Override
     public void removeHome(String name) {
         this.homes.removeIf(home -> home.getName().equalsIgnoreCase(name));
+        this.homeShares.remove(name.toLowerCase());
         this.getStorage().deleteHome(this.uniqueId, name);
+        this.getStorage().removeAllHomeShares(this.uniqueId, name);
     }
 
     @Override

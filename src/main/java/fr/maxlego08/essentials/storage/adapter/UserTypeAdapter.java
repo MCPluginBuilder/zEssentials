@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import fr.maxlego08.essentials.api.EssentialsPlugin;
 import fr.maxlego08.essentials.api.dto.CooldownDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
+import fr.maxlego08.essentials.api.dto.HomeShareDTO;
 import fr.maxlego08.essentials.api.dto.IgnoreDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
 import fr.maxlego08.essentials.api.home.Home;
@@ -24,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -74,9 +76,23 @@ public class UserTypeAdapter extends TypeAdapter<User> {
             if (home.getMaterial() != null) {
                 out.name("material").value(home.getMaterial().name());
             }
+            if (home.isPublic()) out.name("is-public").value(true);
+            if (home.getCategory() != null) out.name("category").value(home.getCategory());
+            if (home.isFavorite()) out.name("is-favorite").value(true);
             out.endObject();
         }
         out.endArray();
+
+        out.name("home-shares").beginObject();
+        for (Map.Entry<String, Set<UUID>> entry : value.getAllHomeShares().entrySet()) {
+            if (entry.getValue().isEmpty()) continue;
+            out.name(entry.getKey()).beginArray();
+            for (UUID target : entry.getValue()) {
+                out.value(target.toString());
+            }
+            out.endArray();
+        }
+        out.endObject();
 
         out.name("ignored-players").beginArray();
         for (UUID ignored : value.getIgnoredPlayers()) {
@@ -107,6 +123,7 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         Map<String, Long> cooldowns = new HashMap<>();
         Map<String, BigDecimal> balances = new HashMap<>();
         List<HomeDTO> homeDTOS = new ArrayList<>();
+        List<HomeShareDTO> homeShareDTOS = new ArrayList<>();
         List<IgnoreDTO> ignoredPlayers = new ArrayList<>();
         long playerTime = 0;
         String playerWeather = null;
@@ -155,17 +172,35 @@ public class UserTypeAdapter extends TypeAdapter<User> {
                         String homeName = null;
                         String location = null;
                         String material = null;
+                        boolean isPublic = false;
+                        String category = null;
+                        boolean favorite = false;
                         while (in.hasNext()) {
                             switch (in.nextName()) {
                                 case "name" -> homeName = in.nextString();
                                 case "location" -> location = in.nextString();
                                 case "material" -> material = in.nextString();
+                                case "is-public" -> isPublic = in.nextBoolean();
+                                case "category" -> category = in.nextString();
+                                case "is-favorite" -> favorite = in.nextBoolean();
                             }
                         }
                         in.endObject();
-                        homeDTOS.add(new HomeDTO(location, homeName, material));
+                        homeDTOS.add(new HomeDTO(location, homeName, material, isPublic, category, favorite));
                     }
                     in.endArray();
+                }
+                case "home-shares" -> {
+                    in.beginObject();
+                    while (in.hasNext()) {
+                        String shareHomeName = in.nextName();
+                        in.beginArray();
+                        while (in.hasNext()) {
+                            homeShareDTOS.add(new HomeShareDTO(uniqueId, shareHomeName, UUID.fromString(in.nextString())));
+                        }
+                        in.endArray();
+                    }
+                    in.endObject();
                 }
                 case "ignored-players" -> {
                     in.beginArray();
@@ -193,6 +228,7 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         user.setCooldowns(cooldowns.entrySet().stream().map(entry -> new CooldownDTO(entry.getKey(), entry.getValue(), new Date())).collect(Collectors.toList()));
         user.setLastLocation(lastLocation);
         user.setHomes(homeDTOS);
+        user.setHomeShares(homeShareDTOS);
         user.setIgnoredPlayers(ignoredPlayers);
         user.loadPlayerTimeWeather(playerTime, playerWeather);
         user.setPowerTools(powerTools);

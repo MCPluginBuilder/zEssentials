@@ -27,7 +27,6 @@ include("Hooks:NChat")
 include("Hooks:WorldGuard")
 include("Hooks:MythicMobs")
 
-include("NMS:V1_20_4")
 include("NMS:V1_20_6")
 include("NMS:V1_21")
 include("NMS:V1_21_1")
@@ -40,4 +39,5 @@ include("NMS:V1_21_8")
 include("NMS:V1_21_9")
 include("NMS:V1_21_10")
 include("NMS:V1_21_11")
+include("NMS:V26_2")
 

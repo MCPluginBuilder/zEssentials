@@ -1,0 +1,32 @@
+name: '#3f3f3fᴘᴜʙʟɪᴄ ʜᴏᴍᴇs'
+size: 54
+items:
+  decorations:
+    item:
+      material: GRAY_STAINED_GLASS_PANE
+      name: '&e'
+    slots:
+      - 0-8
+  public-homes:
+    type: ZESSENTIALS_PUBLIC_HOMES
+    slots:
+      - 9-53
+    item:
+      material: '%material%'
+      name: '&f%name%'
+      lore:
+        - '#ffd353ℹ Informations#3f3f3f:'
+        - '#3f3f3f• &7Owner#3f3f3f: #4cd5ff%player%'
+        - '#3f3f3f• &7Category#3f3f3f: #4cd5ff%category%'
+        - ''
+        - '&f➥ &nLeft Click&r&7 to teleport'
+  informations:
+    slot: 4
+    item:
+      material: NETHER_STAR
+      name: '&fᴘᴜʙʟɪᴄ ʜᴏᴍᴇs'
+      lore:
+        - '#ffd353ℹ Informations#3f3f3f:'
+        - '#3f3f3f• &7Browse and teleport to public homes.'
+        - ''
+        - '#3f3f3f• &7Command#3f3f3f: #4cd5ff/publichomes &7[player]'

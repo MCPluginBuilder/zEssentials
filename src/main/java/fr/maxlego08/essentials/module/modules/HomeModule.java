@@ -1,11 +1,15 @@
 package fr.maxlego08.essentials.module.modules;
 
 import fr.maxlego08.essentials.ZEssentialsPlugin;
+import fr.maxlego08.essentials.api.commands.Permission;
+import fr.maxlego08.essentials.api.configuration.NonLoadable;
+import fr.maxlego08.essentials.api.dto.PublicHomeDTO;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.home.HomeDisplay;
 import fr.maxlego08.essentials.api.home.HomeManager;
 import fr.maxlego08.essentials.api.home.HomePermission;
 import fr.maxlego08.essentials.api.home.HomeUsageType;
+import fr.maxlego08.essentials.api.home.PublicHomesDisplay;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.storage.IStorage;
 import fr.maxlego08.essentials.api.user.User;
@@ -22,7 +26,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permissible;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class HomeModule extends ZModule implements HomeManager {
 
@@ -36,6 +45,16 @@ public class HomeModule extends ZModule implements HomeManager {
     private boolean homeDeleteConfirm;
     private HomeUsageType homeUsageType;
     private String defaultHomeMaterial;
+    private boolean enablePublicHomes;
+    private boolean enableSharedHomes;
+    private boolean enableCategories;
+    private boolean enableHomePreview;
+    private int maxPublicHomes;
+    private int maxSharedPerHome;
+    private boolean favoriteFirst;
+    private PublicHomesDisplay publicHomesDisplay = PublicHomesDisplay.CHAT;
+    @NonLoadable
+    private final Map<UUID, List<PublicHomeDTO>> publicHomesCache = new HashMap<>();
 
     public HomeModule(ZEssentialsPlugin plugin) {
         super(plugin, "home");
@@ -51,6 +70,7 @@ public class HomeModule extends ZModule implements HomeManager {
         this.loadInventory("homes");
         this.loadInventory("homes_donut");
         this.loadInventory("home_delete");
+        this.loadInventory("public_homes");
     }
 
     @Override
@@ -89,6 +109,9 @@ public class HomeModule extends ZModule implements HomeManager {
             int homeAmount = user.countHomes();
             int maxHome = getMaxHome(player);
             List<Home> homes = user.getHomes();
+            if (this.favoriteFirst) {
+                homes = homes.stream().sorted(Comparator.comparing(Home::isFavorite).reversed()).toList();
+            }
 
             if (this.homeDisplay == HomeDisplay.IN_LINE) {
                 List<String> homesAsString = homes.stream().map(home -> getMessage(Message.COMMAND_HOME_INFORMATION_IN_LINE_INFO, formatHomeInformation(home, homeAmount, maxHome))).toList();
@@ -120,7 +143,7 @@ public class HomeModule extends ZModule implements HomeManager {
         int x = location != null ? location.getBlockX() : 0;
         int y = location != null ? location.getBlockY() : 0;
         int z = location != null ? location.getBlockZ() : 0;
-        return new Object[]{"%count%", homeAmount, "%max%", maxHome, "%name%", home.getName(), "%world%", worldName, "%environment%", environment, "%x%", x, "%y%", y, "%z%", z};
+        return new Object[]{"%count%", homeAmount, "%max%", maxHome, "%name%", home.getName(), "%world%", worldName, "%environment%", environment, "%x%", x, "%y%", y, "%z%", z, "%category%", home.getCategory() != null ? home.getCategory() : "", "%favorite%", home.isFavorite(), "%public%", home.isPublic()};
     }
 
     @Override
@@ -136,6 +159,9 @@ public class HomeModule extends ZModule implements HomeManager {
         placeholders.register("x", String.valueOf(location != null ? location.getBlockX() : 0));
         placeholders.register("y", String.valueOf(location != null ? location.getBlockY() : 0));
         placeholders.register("z", String.valueOf(location != null ? location.getBlockZ() : 0));
+        placeholders.register("category", home.getCategory() != null ? home.getCategory() : "");
+        placeholders.register("favorite", String.valueOf(home.isFavorite()));
+        placeholders.register("public", String.valueOf(home.isPublic()));
         return placeholders;
     }
 
@@ -216,6 +242,43 @@ public class HomeModule extends ZModule implements HomeManager {
     }
 
     @Override
+    public void visitHome(User user, String username, String homeName) {
+        IStorage iStorage = this.plugin.getStorageManager().getStorage();
+        iStorage.fetchUniqueId(username, ownerUuid -> {
+
+            if (ownerUuid == null) {
+                message(user, Message.PLAYER_NOT_FOUND, "%player%", username);
+                return;
+            }
+
+            iStorage.getHome(ownerUuid, homeName, optional -> {
+
+                if (optional.isEmpty()) {
+                    message(user, Message.COMMAND_HOME_DOESNT_EXIST, "%name%", homeName);
+                    return;
+                }
+
+                Home home = optional.get();
+
+                // Own home, or a public home the visitor is allowed to access
+                if (ownerUuid.equals(user.getUniqueId()) || (home.isPublic() && user.hasPermission(Permission.ESSENTIALS_HOME_VISIT))) {
+                    teleport(user, home);
+                    return;
+                }
+
+                // Otherwise the home must be explicitly shared with the visitor
+                iStorage.isHomeSharedWith(ownerUuid, home.getName(), user.getUniqueId(), shared -> {
+                    if (shared && user.hasPermission(Permission.ESSENTIALS_HOME_VISIT)) {
+                        teleport(user, home);
+                    } else {
+                        message(user, Message.COMMAND_HOME_NOT_ACCESSIBLE, "%name%", homeName, "%player%", username);
+                    }
+                });
+            });
+        });
+    }
+
+    @Override
     public void deleteHome(CommandSender sender, String username, String homeName) {
         IStorage iStorage = this.plugin.getStorageManager().getStorage();
         iStorage.fetchUniqueId(username, uuid -> {
@@ -240,6 +303,7 @@ public class HomeModule extends ZModule implements HomeManager {
                         return;
                     }
                     iStorage.deleteHome(uuid, homeName);
+                    iStorage.removeAllHomeShares(uuid, homeName);
                     message(sender, Message.COMMAND_HOME_ADMIN_DELETE, "%name%", homeName, "%player%", username);
                 });
             }
@@ -282,5 +346,53 @@ public class HomeModule extends ZModule implements HomeManager {
     @Override
     public String getDefaultHomeMaterial() {
         return defaultHomeMaterial;
+    }
+
+    public boolean isEnablePublicHomes() {
+        return enablePublicHomes;
+    }
+
+    public boolean isEnableSharedHomes() {
+        return enableSharedHomes;
+    }
+
+    public boolean isEnableCategories() {
+        return enableCategories;
+    }
+
+    public boolean isEnableHomePreview() {
+        return enableHomePreview;
+    }
+
+    public int getMaxPublicHomes() {
+        return maxPublicHomes;
+    }
+
+    public int getMaxSharedPerHome() {
+        return maxSharedPerHome;
+    }
+
+    public boolean isFavoriteFirst() {
+        return favoriteFirst;
+    }
+
+    public long getPublicHomeCount(User user) {
+        return user.getHomes().stream().filter(Home::isPublic).count();
+    }
+
+    public PublicHomesDisplay getPublicHomesDisplay() {
+        return publicHomesDisplay;
+    }
+
+    public List<PublicHomeDTO> getCachedPublicHomes(UUID uuid) {
+        return this.publicHomesCache.getOrDefault(uuid, new ArrayList<>());
+    }
+
+    public void setCachedPublicHomes(UUID uuid, List<PublicHomeDTO> homes) {
+        this.publicHomesCache.put(uuid, homes);
+    }
+
+    public void openPublicHomesInventory(Player player) {
+        this.plugin.getInventoryManager().openInventory(player, this.plugin, "public_homes");
     }
 }
