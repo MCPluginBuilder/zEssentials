@@ -13,6 +13,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -29,7 +30,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,6 +55,9 @@ public class ZCommandManager extends ZUtils implements CommandManager {
     }
 
     protected final List<EssentialsCommand> commands = new ArrayList<>();
+    // Keeps a reference to the bukkit command created for each essentials command, so a command
+    // registered at runtime (custom commands) can be unregistered on reload.
+    private final Map<EssentialsCommand, PluginCommand> registeredCommands = new IdentityHashMap<>();
     private final ZEssentialsPlugin plugin;
 
     public ZCommandManager(ZEssentialsPlugin plugin) {
@@ -259,8 +265,23 @@ public class ZCommandManager extends ZUtils implements CommandManager {
      * @param aliases           - Command aliases
      */
     public void registerCommand(Plugin plugin, String mainCommand, EssentialsCommand essentialsCommand, List<String> aliases) {
+        this.registerCommand(plugin, mainCommand, essentialsCommand, aliases, true);
+    }
 
-        YamlConfiguration configuration = getCommandConfiguration();
+    /**
+     * Same as {@link #registerCommand(Plugin, String, EssentialsCommand, List)} but allows to skip the
+     * commands.yml lookup. Commands created at runtime (custom commands) must skip it, the file is
+     * indexed by class name and every custom command shares the same class.
+     *
+     * @param plugin                   - The plugin registering the command
+     * @param mainCommand              - Main command
+     * @param essentialsCommand        - Command object
+     * @param aliases                  - Command aliases
+     * @param useCommandConfiguration  - Whether commands.yml can rename/disable this command
+     */
+    public void registerCommand(Plugin plugin, String mainCommand, EssentialsCommand essentialsCommand, List<String> aliases, boolean useCommandConfiguration) {
+
+        YamlConfiguration configuration = useCommandConfiguration ? getCommandConfiguration() : null;
         if (configuration != null) {
             String commandName = getCommandName(essentialsCommand);
             ConfigurationSection configurationSection = configuration.getConfigurationSection(commandName);
@@ -301,6 +322,7 @@ public class ZCommandManager extends ZUtils implements CommandManager {
             essentialsCommand.addSubCommand(mainCommand);
             essentialsCommand.addSubCommand(aliases);
             commands.add(essentialsCommand);
+            this.registeredCommands.put(essentialsCommand, command);
 
             if (!commandMap.register(command.getName(), plugin.getDescription().getName(), command)) {
                 plugin.getLogger().warning("Unable to add the command /" + mainCommand + " (already registered by another plugin). Use /zessentials:" + mainCommand + " instead.");
@@ -317,6 +339,44 @@ public class ZCommandManager extends ZUtils implements CommandManager {
             this.plugin.getLogger().severe("Failed to register command '" + mainCommand + "': " + exception.getMessage());
             exception.printStackTrace();
         }
+    }
+
+    /**
+     * Unregisters a command previously registered with
+     * {@link #registerCommand(Plugin, String, EssentialsCommand, List, boolean)}.
+     * Used when the custom commands are reloaded, to avoid duplicated commands.
+     *
+     * @param essentialsCommand - The command to unregister
+     */
+    public void unregisterCommand(EssentialsCommand essentialsCommand) {
+
+        this.commands.remove(essentialsCommand);
+
+        PluginCommand pluginCommand = this.registeredCommands.remove(essentialsCommand);
+        if (pluginCommand == null) return;
+
+        if (commandMap instanceof SimpleCommandMap simpleCommandMap) {
+            pluginCommand.unregister(simpleCommandMap);
+            simpleCommandMap.getKnownCommands().values().removeIf(command -> command == pluginCommand);
+        }
+
+        // The permission is only removed if no other command still uses it
+        String permissionName = essentialsCommand.getPermission();
+        if (permissionName != null && this.commands.stream().noneMatch(command -> permissionName.equals(command.getPermission()))) {
+            Permission permission = Bukkit.getPluginManager().getPermission(permissionName);
+            if (permission != null) {
+                Bukkit.getPluginManager().removePermission(permission);
+            }
+        }
+    }
+
+    /**
+     * Sends the new command tree to every online player, so commands registered or unregistered
+     * at runtime are immediately usable and tab completed.
+     */
+    public void refreshPlayerCommands() {
+        // On Folia the packet must be sent from the region thread owning the player
+        Bukkit.getOnlinePlayers().forEach(player -> this.plugin.getScheduler().runAtLocation(player.getLocation(), wrappedTask -> player.updateCommands()));
     }
 
     @Override
@@ -340,7 +400,7 @@ public class ZCommandManager extends ZUtils implements CommandManager {
         return essentialsCommands;
     }
 
-    private boolean isEssentialsCommand(String command) {
+    public boolean isEssentialsCommand(String command) {
         return this.commands.stream().anyMatch(e -> e.getParent() == null && e.getSubCommands().contains(command));
     }
 

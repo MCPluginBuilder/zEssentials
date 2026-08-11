@@ -1,0 +1,108 @@
+########################################################################################################################
+#
+# ░█████╗░██╗░░░██╗░██████╗████████╗░█████╗░███╗░░░███╗
+# ██╔══██╗██║░░░██║██╔════╝╚══██╔══╝██╔══██╗████╗░████║
+# ██║░░╚═╝██║░░░██║╚█████╗░░░░██║░░░██║░░██║██╔████╔██║
+# ██║░░██╗██║░░░██║░╚═══██╗░░░██║░░░██║░░██║██║╚██╔╝██║
+# ╚█████╔╝╚██████╔╝██████╔╝░░░██║░░░╚█████╔╝██║░╚═╝░██║
+# ░╚════╝░░╚═════╝░╚═════╝░░░░╚═╝░░░░╚════╝░╚═╝░░░░░╚═╝
+#
+# Create your own commands, to display a link, the rules, a placeholder, or to run zMenu actions.
+# Perfect for /discord, /map, /vote, /store, /updates...
+#
+# Documentation: https://zessentials.groupez.dev/modules/customcommands
+#
+########################################################################################################################
+
+enable: true
+
+# Every command you create here.
+#
+# command:     the command, without the slash. Required.
+#              A command that already exists in zEssentials will be ignored, check your console on startup.
+# aliases:     other names for the command. Optional.
+# permission:  the permission needed to use the command. Optional, empty means everyone can use it.
+# description: the description of the command, displayed in the tab completion of some server softwares. Optional.
+# cooldown:    time in seconds between two uses of the command, 0 to disable.
+#              Players with the permission essentials.bypass.cooldown are not affected.
+# type:        how the content is displayed:
+#              TCHAT   - in the chat, the default value
+#              CENTER  - in the chat, but centered
+#              ACTION  - in the action bar
+#              TITLE   - as a title, uses title, subtitle, start, time and end
+#              BOSSBAR - as a boss bar, uses text, color, overlay, flags and duration
+#              NONE    - displays nothing, only runs the actions
+# messages:    the lines to display, used by TCHAT, CENTER and ACTION.
+# actions:     zMenu actions run after the messages, for example a sound or another command.
+#
+# MiniMessage, legacy colors and PlaceholderAPI placeholders are supported everywhere.
+# <click:open_url:'...'> and <hover:show_text:'...'> allow to create clickable links.
+
+commands:
+
+  - command: "discord"
+    aliases: [ "dc" ]
+    permission: ""
+    cooldown: 3
+    type: TCHAT
+    messages:
+      - ""
+      - "<primary>Join our Discord server:"
+      - "<click:open_url:'https://discord.gg/your-invite'><hover:show_text:'&fClick to open the invitation'><secondary>https://discord.gg/your-invite</secondary></hover></click>"
+      - ""
+    actions:
+      - type: sound
+        sound: ENTITY_EXPERIENCE_ORB_PICKUP
+
+  - command: "map"
+    aliases: [ "dynmap", "carte" ]
+    cooldown: 3
+    type: TCHAT
+    messages:
+      - ""
+      - "<primary>Our live map:"
+      - "<click:open_url:'https://map.example.com'><hover:show_text:'&fClick to open the map'><secondary>https://map.example.com</secondary></hover></click>"
+      - ""
+
+  - command: "updates"
+    permission: ""
+    type: CENTER
+    messages:
+      - "&8&m-----------------------------------------"
+      - "<primary>Latest updates"
+      - ""
+      - "&7- &fNew shop at the spawn"
+      - "&7- &fThe end is now open"
+      - "&8&m-----------------------------------------"
+
+  - command: "playerinfo"
+    permission: "essentials.playerinfo"
+    type: TCHAT
+    messages:
+      - "<primary>Balance<secondary>: &f%zessentials_user_formatted_balance_money%"
+      - "<primary>Playtime<secondary>: &f%zessentials_user_playtime_formatted%"
+
+# Example with a title
+#  - command: "welcome"
+#    type: TITLE
+#    title: "<primary>Welcome"
+#    subtitle: "&fon our server, %player%"
+#    start: 100
+#    time: 2800
+#    end: 100
+
+# Example with a boss bar
+#  - command: "event"
+#    type: BOSSBAR
+#    text: "<primary>An event starts in 5 minutes"
+#    color: BLUE
+#    overlay: PROGRESS
+#    duration: 100
+
+# Example without any message, only actions
+#  - command: "shop"
+#    type: NONE
+#    actions:
+#      - type: inventory
+#        inventory: my_shop
+#        plugin: zMenu

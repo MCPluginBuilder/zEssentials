@@ -6,6 +6,12 @@
 
 # Unreleased
 
+- Added a new **custom commands** module (`modules/customcommands/config.yml`) to create your own commands without any other plugin, for `/discord`, `/map`, `/vote`, `/store`, `/updates`...
+    - Each command can define `aliases`, a `permission`, a `description`, a `cooldown` in seconds (bypassed with `essentials.bypass.cooldown`) and a list of `messages`
+    - `type` selects how the content is displayed: `TCHAT`, `CENTER`, `ACTION`, `TITLE`, `BOSSBAR` or `NONE`
+    - MiniMessage, legacy colors and PlaceholderAPI placeholders are supported, so `<click:open_url:'...'>` can be used to display clickable links
+    - zMenu `actions` can be run after the messages (sound, command, inventory, ...)
+    - Commands are registered at runtime and `/ezreload` updates them without duplicating anything; a custom command that would override an existing zEssentials command is refused with a message in the console
 - Added display options for `/seen` in `modules/sanction/config.yml` — `seen-show-uuid`, `seen-show-ip`, `seen-show-last-location`, `seen-show-created-at` and `seen-show-playtime`. The IP address can now be hidden globally, even from operators: until now it was only protected by the `essentials.seen.show.ip` permission, which an operator always has
 - Fixed several configuration options being silently ignored: they were declared as `private final` fields with a constant initializer, so javac inlined them at compile time and the value read from the configuration file was never used
     - Sanction module: `date-format`, `kick-default-reason`, `ban-default-reason`, `mute-default-reason`, `unmute-default-reason`, `unban-default-reason`
