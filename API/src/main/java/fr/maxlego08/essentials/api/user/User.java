@@ -5,7 +5,10 @@ import fr.maxlego08.essentials.api.discord.DiscordAccount;
 import fr.maxlego08.essentials.api.dto.CooldownDTO;
 import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
+import fr.maxlego08.essentials.api.dto.HomeShareDTO;
+import fr.maxlego08.essentials.api.dto.IgnoreDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
+import fr.maxlego08.essentials.api.dto.MailMessageDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
 import fr.maxlego08.essentials.api.dto.UserDTO;
@@ -14,6 +17,7 @@ import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.kit.Kit;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.utils.DynamicCooldown;
@@ -32,6 +36,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -106,6 +111,36 @@ public interface User {
      * @return true if the user is ignoring the specified user, false otherwise.
      */
     boolean isIgnore(UUID uniqueId);
+
+    /**
+     * Adds a player to this user's ignore list.
+     *
+     * @param uniqueId the UUID of the player to ignore
+     * @return true if the player was added, false if already ignored
+     */
+    boolean addIgnore(UUID uniqueId);
+
+    /**
+     * Removes a player from this user's ignore list.
+     *
+     * @param uniqueId the UUID of the player to stop ignoring
+     * @return true if the player was removed, false if not ignored
+     */
+    boolean removeIgnore(UUID uniqueId);
+
+    /**
+     * Gets the list of players ignored by this user.
+     *
+     * @return the list of ignored player UUIDs
+     */
+    List<UUID> getIgnoredPlayers();
+
+    /**
+     * Sets the list of ignored players from the provided ignore data transfer objects.
+     *
+     * @param ignoredPlayers the ignore data transfer objects
+     */
+    void setIgnoredPlayers(List<IgnoreDTO> ignoredPlayers);
 
     /**
      * Gets the teleport request sent to the user.
@@ -560,6 +595,53 @@ public interface User {
     boolean isHomeName(String homeName);
 
     /**
+     * Persists the public/category/favorite state of the given home.
+     *
+     * @param home the home to persist.
+     */
+    void saveHomeSocial(Home home);
+
+    /**
+     * Loads the home shares from the given DTOs (in-memory only, no persistence).
+     *
+     * @param shares the shares to load.
+     */
+    void setHomeShares(List<HomeShareDTO> shares);
+
+    /**
+     * Gets the players a specific home is shared with.
+     *
+     * @param homeName the home name.
+     * @return the set of target UUIDs (never null).
+     */
+    Set<UUID> getHomeShares(String homeName);
+
+    /**
+     * Gets all home shares of this user (home name -&gt; target UUIDs).
+     *
+     * @return the map of shares.
+     */
+    Map<String, Set<UUID>> getAllHomeShares();
+
+    /**
+     * Shares a home with a target player.
+     *
+     * @param homeName the home name.
+     * @param target   the target UUID.
+     * @return true if the share was added, false if it already existed.
+     */
+    boolean addHomeShare(String homeName, UUID target);
+
+    /**
+     * Stops sharing a home with a target player.
+     *
+     * @param homeName the home name.
+     * @param target   the target UUID.
+     * @return true if the share was removed, false if it did not exist.
+     */
+    boolean removeHomeShare(String homeName, UUID target);
+
+    /**
      * Gets the active ban ID for the user.
      *
      * @return The active ban ID for the user.
@@ -819,6 +901,34 @@ public interface User {
     void addMailBoxItem(MailBoxItem mailBoxItem);
 
     /**
+     * Retrieves the text messages sent to this user with /mail send.
+     *
+     * @return the list of mail messages
+     */
+    List<MailMessage> getMailMessages();
+
+    /**
+     * Sets the text messages of this user.
+     *
+     * @param mailMessages the mail messages to set
+     */
+    void setMailMessages(List<MailMessageDTO> mailMessages);
+
+    /**
+     * Adds a text message to this user's mailbox.
+     *
+     * @param mailMessage the mail message to add
+     */
+    void addMailMessage(MailMessage mailMessage);
+
+    /**
+     * Counts the text messages this user has not read yet.
+     *
+     * @return the number of unread messages
+     */
+    long countUnreadMailMessages();
+
+    /**
      * Retrieves the dynamic cooldown associated with the user.
      *
      * @return the {@link DynamicCooldown} instance
@@ -1006,6 +1116,42 @@ public interface User {
      * @param seconds the number of seconds to remove from the user's fly time
      */
     void removeFlySeconds(long seconds);
+
+    /**
+     * Gets the persisted fixed player time in ticks (set via /ptime). 0 means no override.
+     *
+     * @return the fixed player time in ticks
+     */
+    long getPlayerTime();
+
+    /**
+     * Sets and persists the fixed player time in ticks (set via /ptime). 0 clears the override.
+     *
+     * @param playerTime the fixed player time in ticks
+     */
+    void setPlayerTime(long playerTime);
+
+    /**
+     * Gets the persisted fixed player weather (set via /pweather). null means no override.
+     *
+     * @return the fixed player weather ("DOWNFALL") or null
+     */
+    String getPlayerWeather();
+
+    /**
+     * Sets and persists the fixed player weather (set via /pweather). null clears the override.
+     *
+     * @param playerWeather the fixed player weather ("DOWNFALL") or null
+     */
+    void setPlayerWeather(String playerWeather);
+
+    /**
+     * Loads the persisted player time and weather without persisting them back (used by JSON storage on load).
+     *
+     * @param playerTime    the fixed player time in ticks
+     * @param playerWeather the fixed player weather or null
+     */
+    void loadPlayerTimeWeather(long playerTime, String playerWeather);
 
     /**
      * Retrieves the linked Discord account for the user.

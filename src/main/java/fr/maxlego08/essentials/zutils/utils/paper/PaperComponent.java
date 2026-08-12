@@ -250,8 +250,8 @@ public class PaperComponent extends PlaceholderUtils implements AdventureCompone
     }
 
     @Override
-    public void sendBossBar(EssentialsPlugin plugin, Player player, BossBarMessage bossBarMessage) {
-        BossBar bossBar = BossBar.bossBar(getComponent(papi(bossBarMessage.text(), player)), 1f, bossBarMessage.getColor(), bossBarMessage.getOverlay(), bossBarMessage.getFlags());
+    public void sendBossBar(EssentialsPlugin plugin, Player player, BossBarMessage bossBarMessage, Object... args) {
+        BossBar bossBar = BossBar.bossBar(getComponent(papi(getMessage(bossBarMessage.text(), args), player)), 1f, bossBarMessage.getColor(), bossBarMessage.getOverlay(), bossBarMessage.getFlags());
         player.showBossBar(bossBar);
 
         new BossBarAnimation(plugin, player, bossBar, bossBarMessage.duration());

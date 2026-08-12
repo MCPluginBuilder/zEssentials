@@ -47,6 +47,13 @@ public class MessageModule extends ZModule {
             return;
         }
 
+        // Ignore check: block the message if the receiver is ignoring the sender.
+        // Placed after the vanish check so a vanished receiver still returns PLAYER_NOT_FOUND (no presence leak).
+        if (targetUser != null && targetUser.isIgnore(user.getUniqueId())) {
+            message(user, Message.COMMAND_MESSAGE_IGNORE_PLAYER, "%player%", userName);
+            return;
+        }
+
         if (options.getOrDefault(Option.PRIVATE_MESSAGE_DISABLE, false)) {
             message(user, Message.COMMAND_MESSAGE_DISABLE, "%player%", userName);
             return;

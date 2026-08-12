@@ -6,6 +6,56 @@
 
 # Unreleased
 
+# 1.0.3.8
+
+- Added **text mails** to the mailbox module, to send a message to a player who is not connected (`modules/mailbox/config.yml`):
+    - `/mail send <player> <message>` works with an online or offline player, `/mail read` displays the received mails and marks them as read, `/mail clearmessages [player]` deletes them and `/mail sendall <message>` sends a mail to every online player
+    - A player who connects with unread mails is notified with a clickable message (`message-notify-on-join`, `message-notify-delay`)
+    - Configurable limits: `message-max-amount` per player, `message-max-length`, `message-cooldown` between two mails (bypassed with `essentials.bypass.cooldown`) and `message-date-format`
+    - A muted player cannot send a mail, and a player who used `/ignore` no longer receives the mails of the ignored player
+    - Persistence via a new `user_mail_messages` table (SQLite and MySQL) and inside the user file for the JSON storage, unlike the item mailbox which stays MySQL only
+    - New permissions `essentials.mail.send`, `essentials.mail.read`, `essentials.mail.send.all` and `essentials.mail.clear.messages`
+- Fixed the build of the `NMS:V26_2` module: since Minecraft 26.1 the built in entity types are declared in `EntityTypes` and no longer in `EntityType`, so `EntityType.BLOCK_DISPLAY`, `ITEM_DISPLAY` and `TEXT_DISPLAY` could not be resolved anymore
+- Fixed `shadowJar` failing with `Unsupported class file major version 69` — the `NMS:V26_2` module still builds with a Java 25 toolchain (needed to read the 26.2 dev bundle) but now emits Java 21 bytecode, which the ASM version bundled with the shadow plugin can remap
+- Added a new **custom commands** module (`modules/customcommands/config.yml`) to create your own commands without any other plugin, for `/discord`, `/map`, `/vote`, `/store`, `/updates`...
+    - Each command can define `aliases`, a `permission`, a `description`, a `cooldown` in seconds (bypassed with `essentials.bypass.cooldown`) and a list of `messages`
+    - `type` selects how the content is displayed: `TCHAT`, `CENTER`, `ACTION`, `TITLE`, `BOSSBAR` or `NONE`
+    - MiniMessage, legacy colors and PlaceholderAPI placeholders are supported, so `<click:open_url:'...'>` can be used to display clickable links
+    - zMenu `actions` can be run after the messages (sound, command, inventory, ...)
+    - Commands are registered at runtime and `/ezreload` updates them without duplicating anything; a custom command that would override an existing zEssentials command is refused with a message in the console
+- Added display options for `/seen` in `modules/sanction/config.yml` — `seen-show-uuid`, `seen-show-ip`, `seen-show-last-location`, `seen-show-created-at` and `seen-show-playtime`. The IP address can now be hidden globally, even from operators: until now it was only protected by the `essentials.seen.show.ip` permission, which an operator always has
+- Fixed several configuration options being silently ignored: they were declared as `private final` fields with a constant initializer, so javac inlined them at compile time and the value read from the configuration file was never used
+    - Sanction module: `date-format`, `kick-default-reason`, `ban-default-reason`, `mute-default-reason`, `unmute-default-reason`, `unban-default-reason`
+    - Spawn module: `respawn-listener-priority` and `spawn-join-listener-priority` — the respawn and join listeners were always registered with the `NORMAL` priority instead of the configured one (`HIGHEST` by default)
+    - Worldedit module: `enable-color-visualisation` and `open-help-inventory`
+- Clarified the `/compact` and `/compactall` descriptions to mention their existing `/condense` and `/condenseall` aliases
+- Fixed the chat ping sound not playing on Paper 1.21.3+ — `org.bukkit.Sound` became an interface, so the ping sound is now resolved cross-version through the zMenu XSound API (like the teleportation sounds)
+- Fixed countdown/teleport placeholders (`%name%`, `%seconds%`, ...) showing as raw text when the message `type` is set to `TITLE` or `BOSSBAR` — internal placeholders are now resolved for every message type
+- Added `/pingsound` command (`/pingsounds` alias) to toggle the chat ping sound per player; the `enable-player-ping-sound` global toggle is now honored
+- Added `/tp <player1> <player2>` — teleport one player to another player
+- Added a player ignore system with persistence (`user_ignores` table):
+    - `/ignore <player>` blocks a player's private messages and teleport requests (`/tpa`, `/tpahere`)
+    - `/unignore <player>` and `/ignorelist` (`/ignores` alias)
+    - Works for online and offline targets, persists across restarts (MySQL and JSON storage)
+- Added `/delhome-other <player> <home>` (`/delhomeother`, `/hdelother` aliases) — admin command to delete a specific home of another player (online or offline), with permission `essentials.del.home.other`
+- Added persistence for `/ptime` and `/pweather` — the per-player time and weather are now saved and re-applied automatically when the player reconnects
+- Fixed private messages to a vanished player revealing their presence when they had ignored the sender — the vanish check now takes precedence over the ignore check
+- Removed the non-functional `itemadders-font-regex` chat config options (the feature was never wired) and corrected the `/sc` reference in the chat config comment (it is `/chathistory`)
+- Added a Homes system enhancement (see `modules/home/config.yml`):
+    - **Public homes** — `/homepublic <home>` makes a home visitable by everyone, `/publichomes [player]` lists them (in chat or a paginated GUI via `public-homes-display: CHAT|INVENTORY`); visit with `/home <player>:<home>` (permissions `essentials.home.public`, `essentials.home.visit`, configurable `max-public-homes`)
+    - **Shared homes** — `/homeshare <home> <player>`, `/homeunshare`, `/homeshares` to share a home with specific players (online or offline); shares are purged when the home is deleted (permission `essentials.home.share`, `max-shared-per-home`)
+    - **Categories** — `/homecategory <home> <category>` to organise homes (permission `essentials.home.category`), placeholder `%category%`
+    - **Favorites** — `/homefavorite <home>` to mark a home as favorite; `favorite-first` shows favorites at the top (permission `essentials.home.favorite`), placeholder `%favorite%`
+    - **Preview** — optional `enable-home-preview` shows a clickable confirmation before teleporting
+    - **Import** — `/homeimport essentialsx` imports homes from EssentialsX (permission `essentials.home.import`)
+    - Persistence via new `is_public`/`category`/`is_favorite` columns on `user_homes` and a new `user_home_shares` table (MySQL and JSON storage)
+- Updated zMenu to `1.1.1.6` and added support for Minecraft/Paper **26.2**:
+    - Added a new `NMS:V26_2` module (built against the `26.2.build.+` dev bundle, compiled with Java 25 which Minecraft 26.x requires)
+    - Migrated the whole plugin to **Mojang mappings** — Paper 26.1+ removed Spigot reobfuscation, so every NMS module now uses `MOJANG_PRODUCTION` and the shaded jar is marked `paperweight-mappings-namespace: mojang`
+    - **zEssentials is now Paper-only and requires Paper 1.20.5+ — Minecraft 1.20.4 is no longer supported** (Mojang-mapped plugins only load on 1.20.5+)
+    - Replaced the removed zMenu `NmsVersion` enum with the new `MinecraftVersion` API for version detection and NMS package resolution (`NmsVersionUtils`)
+    - Bumped `paperweight-userdev` to `2.0.0-beta.21`
+
 # 1.0.3.7
 
 - Added player list placeholders for retrieving online player information by index (1-based, sorted alphabetically, excludes vanished players):

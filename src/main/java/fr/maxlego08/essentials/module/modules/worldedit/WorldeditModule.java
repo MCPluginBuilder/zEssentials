@@ -68,8 +68,9 @@ public class WorldeditModule extends ZModule implements WorldeditManager {
     private final List<String> blacklistBlocks = new ArrayList<>();
     @NonLoadable
     private final WorldeditBossBar bossBar;
-    private final boolean enableColorVisualisation = false;
-    private final boolean openHelpInventory = false;
+    // Do not make those fields final, javac would inline the constant and the configuration would be ignored
+    private boolean enableColorVisualisation = false;
+    private boolean openHelpInventory = false;
     private BigDecimal defaultBlockPrice;
     private List<BlockPrice> blocksPrice;
     private List<PermissionBlockPerSecond> permissionsBlocksPerSecond;

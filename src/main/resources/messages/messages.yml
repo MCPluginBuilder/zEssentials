@@ -320,7 +320,7 @@ description-afk: "Toggle your AFK status"
 description-craft: "Open workbench"
 description-enchanting: "Open enchantment table"
 description-invsee: "Open player's inventory"
-description-compact: "Compact material"
+description-compact: "Compact a material into blocks, aliases: /blocks, /condense"
 description-hat: "Create yourself a pretty hat"
 description-tp: "Teleport to a player"
 description-tp-self: "Teleport a player to your location"
@@ -392,7 +392,7 @@ description-ext: "Stop burning"
 description-near: "Show players close to you"
 description-play-time: "Show player's playtime"
 description-bottom: "Teleporting to bottom"
-description-compact-all: "Compact items in your inventories"
+description-compact-all: "Compact every item in your inventory, aliases: /blocksall, /condenseall"
 description-version: "Show plugin version"
 description-kill-all: "Kill entities"
 description-seen: "Show player informations"
@@ -415,6 +415,7 @@ description-give: "Give items"
 description-give-all: "Give items to online players"
 description-power-tools: "Add command to your items"
 description-pay-toggle: "Toggles payments towards the player"
+description-pay-notification-toggle: "Toggle receiving pay notifications"
 description-power-tools-toggle: "Toggle power tools"
 description-kit-show: "Show a kit"
 description-mail: "Open mailbox"
@@ -451,6 +452,10 @@ description-mail-give: "Give an item to player's mailbox"
 description-mail-give-hand: "Send the item in your hand to a player's mailbox"
 description-mail-giveall: "Give items to players' mailboxes"
 description-mail-giveall-hand: "Send the item in your hand to players' mailboxes"
+description-mail-send: "Send a mail to a player, online or not"
+description-mail-read: "Read the mails you received"
+description-mail-send-all: "Send a mail to every online player"
+description-mail-clear-messages: "Delete the mails of a player"
 description-mail-clear: "Removes items from the player’s mailbox"
 description-voteparty-information: "Show the vote party"
 description-voteparty-set: "Set the number of votes in the vote party"
@@ -784,6 +789,8 @@ command-social-spy-disable: "&7Social spy <error>disable &7for &f%player%<succes
 command-warp-empty: "<error>No warp defined, use command &f/setwarp <name>"
 command-pay-toggle-enable: "&7Pay <success>enable &7for &f%player%<success>."
 command-pay-toggle-disable: "&7Pay <error>disable &7for &f%player%<error>."
+command-pay-notification-toggle-enable: "&7Pay notifications <success>enabled &7for &f%player%<success>."
+command-pay-notification-toggle-disable: "&7Pay notifications <error>disabled &7for &f%player%<error>."
 command-power-tools-toggle-enable: "<success>All of your power tools have been enabled &7for &f%player%<success>."
 command-power-tools-toggle-disable: "<error>All of your power tools have been disabled &7for &f%player%<error>."
 
@@ -856,6 +863,70 @@ mailbox-give-all: "<success>You just gave &n&fx%amount% %item%&r <success>to onl
 mailbox-give-hand: "<success>You just sent the item in your hand to &f%player%<success>'s mailbox (&fx%amount% %item%<success>)."
 mailbox-give-all-hand: "<success>You just sent the item in your hand (&fx%amount% %item%<success>) to every online player's mailbox."
 mailbox-clear: "<success>You have just cleared the mailbox of &f%player%<success>."
+
+# Available placeholders:
+# %player% - Receiver name
+# %message% - The mail content
+mailbox-message-send: "<success>Your mail was sent to &f%player%<success>."
+
+# Available placeholders:
+# %player% - Sender name
+# %message% - The mail content
+mailbox-message-receive: "<primary>&f%player% <primary>sent you a mail &8(&f/mail read&8)"
+
+# Available placeholders:
+# %amount% - Amount of players who received the mail
+# %message% - The mail content
+mailbox-message-send-all: "<success>Your mail was sent to &f%amount% <success>player(s)."
+
+# Available placeholders:
+# %amount% - Amount of unread mails
+mailbox-message-notify: "<primary>You have &f%amount% <primary>unread mail(s), use <click:run_command:'/mail read'><hover:show_text:'&fClick to read your mails'>&f/mail read</hover></click><primary>."
+
+mailbox-message-empty: "<error>You don't have any mail."
+
+# Available placeholders:
+# %amount% - Amount of mails
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>Your mails <secondary>(&f%amount%<secondary>)"
+    - ""
+
+# Available placeholders:
+# %player% - Sender name
+# %date% - Date the mail was sent
+# %message% - The mail content
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>Use <click:run_command:'/mail clearmessages'><hover:show_text:'&fClick to delete your mails'>&f/mail clearmessages</hover></click><secondary> to delete them."
+    - ""
+
+# Available placeholders:
+# %player% - Player name
+mailbox-message-clear: "<success>You have just deleted the mails of &f%player%<success>."
+
+mailbox-message-self: "<error>You cannot send a mail to yourself."
+mailbox-message-mute: "<error>You cannot send a mail while you are muted."
+
+# Available placeholders:
+# %player% - Player name
+mailbox-message-ignore: "<error>&f%player% <error>does not want to receive your mails."
+
+# Available placeholders:
+# %player% - Player name
+mailbox-message-full: "<error>The mailbox of &f%player% <error>is full."
+
+# Available placeholders:
+# %max% - Maximum amount of characters
+mailbox-message-too-long: "<error>Your mail cannot be longer than &f%max% <error>characters."
 
 
 hologram-create-error: "<error>Hologram &f%name% <error>already exists."
@@ -1052,6 +1123,10 @@ description-tp-toggle: "Toggle receiving teleport requests"
 command-teleport-request-disabled: "<error>The player &f%player%<error> has disabled teleport requests."
 command-tp-toggle-enable: "&7Teleport requests <success>enabled &7for &f%player%<success>."
 command-tp-toggle-disable: "&7Teleport requests <error>disabled &7for &f%player%<error>."
+description-tpa-here-toggle: "Toggle receiving tpahere requests"
+command-teleport-here-request-disabled: "<error>The player &f%player%<error> has disabled tpahere requests."
+command-tpa-here-toggle-enable: "&7Tpahere requests <success>enabled &7for &f%player%<success>."
+command-tpa-here-toggle-disable: "&7Tpahere requests <error>disabled &7for &f%player%<error>."
 
 # Cross-server teleportation
 teleport-cross-server-not-supported: "<error>Cross-server teleportation is not supported on this server."
@@ -1104,4 +1179,60 @@ death-message-generic: "#99E0FF%player% &7died."
 death-message-player: "#99E0FF%player% &7was slain by #34cfe0%killer% &7using %weapon%&7."
 death-message-mob: "#99E0FF%player% &7was killed by &c%mob%&7."
 death-message-mythic-mob: "#99E0FF%player% &7was slain by <gradient:#ff6600:#ff0000>%mob%</gradient>&7!"
+
+# Ignore, chat ping sound & teleport to another player
+command-tp-other: "&7You just teleported #34cfe0%player% &7to #34cfe0%target%&7."
+description-ping-sound: "Toggle the chat ping sound"
+command-ping-sound-enable: "&7Chat ping sound <success>enabled &7for &f%player%<success>."
+command-ping-sound-disable: "&7Chat ping sound <error>disabled &7for &f%player%<error>."
+description-ignore: "Ignore a player, blocking their private messages and teleport requests"
+description-unignore: "Stop ignoring a player"
+description-ignore-list: "List the players you are ignoring"
+command-ignore-add: "<success>You are now ignoring &f%player%<success>. You will no longer receive their private messages or teleport requests."
+command-ignore-remove: "<success>You are no longer ignoring &f%player%<success>."
+command-ignore-already: "<error>You are already ignoring &f%player%<error>."
+command-ignore-not: "<error>You are not ignoring &f%player%<error>."
+command-ignore-self: "<error>You cannot ignore yourself."
+command-ignore-list-empty: "<error>You are not ignoring anyone."
+command-ignore-list-header: "<success>You are ignoring &f%count% <success>player(s):"
+command-ignore-list-line: "&7- &f%player%"
+command-message-ignore-player: "<error>You cannot send a message to #34cfe0%player%<error> they are ignoring you."
+description-del-home-other: "Delete a home of another player"
+
+# Homes system (public, shared, categories, favorites, preview, import)
+description-home-public: "Make one of your homes public"
+description-public-homes: "List the public homes"
+description-home-share: "Share a home with a player"
+description-home-unshare: "Stop sharing a home with a player"
+description-home-shares: "List the players a home is shared with"
+description-home-category: "Set the category of a home"
+description-home-favorite: "Toggle a home as favorite"
+description-home-import: "Import homes from another plugin"
+command-home-feature-disabled: "<error>This home feature is disabled on this server."
+command-home-public-enable: "<success>Your home &f%name%<success> is now public."
+command-home-public-disable: "<success>Your home &f%name%<success> is no longer public."
+command-home-public-limit: "<error>You have reached the maximum number of public homes (&f%max%<error>)."
+command-home-not-accessible: "<error>The home &f%name%<error> of &f%player%<error> is not accessible to you."
+command-public-homes-header: "<success>Public homes (&f%count%<success>):"
+command-public-homes-line: "&7- &f%player%&7:&f%name% <click:run_command:'/home %player%:%name%'><hover:show_text:'&7Teleport to this home'><#34cfe0>[Teleport]</click></hover>"
+command-public-homes-empty: "<error>There is no public home."
+command-home-share-add: "<success>You shared your home &f%name%<success> with &f%player%<success>."
+command-home-share-remove: "<success>You stopped sharing your home &f%name%<success> with &f%player%<success>."
+command-home-share-already: "<error>Your home &f%name%<error> is already shared with &f%player%<error>."
+command-home-share-not: "<error>Your home &f%name%<error> is not shared with &f%player%<error>."
+command-home-share-self: "<error>You cannot share a home with yourself."
+command-home-share-limit: "<error>You have reached the maximum number of shares for this home (&f%max%<error>)."
+command-home-share-list-header: "<success>Home &f%name%<success> is shared with &f%count% <success>player(s):"
+command-home-share-list-line: "&7- &f%player%"
+command-home-share-list-empty: "<error>Home &f%name%<error> is not shared with anyone."
+command-home-category-set: "<success>The category of your home &f%name%<success> is now &f%category%<success>."
+command-home-category-reset: "<success>The category of your home &f%name%<success> has been removed."
+command-home-category-invalid: "<error>Invalid category name."
+command-home-favorite-add: "<success>Your home &f%name%<success> is now a favorite."
+command-home-favorite-remove: "<success>Your home &f%name%<success> is no longer a favorite."
+command-home-preview: "&7Home &f%name% &8- &7%world% &8(&7%x%&8, &7%y%&8, &7%z%&8) <click:run_command:'/home %name% confirm'><#34cfe0>[Teleport]</click>"
+command-home-import-start: "<success>Importing homes from &f%source%<success>..."
+command-home-import-done: "<success>Import finished: &f%imported% <success>imported, &f%skipped% <success>skipped, &f%errors% <success>errors."
+command-home-import-unknown: "<error>Unknown import source &f%source%<error>. Available: essentialsx."
+command-home-import-error: "<error>An error occurred during the import, check the console."
 death-message-fists: "&7fists"

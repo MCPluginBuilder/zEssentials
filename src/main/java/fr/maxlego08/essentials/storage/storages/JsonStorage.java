@@ -10,7 +10,9 @@ import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.EconomyTransactionDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
+import fr.maxlego08.essentials.api.dto.MailMessageDTO;
 import fr.maxlego08.essentials.api.dto.PlayerSlotDTO;
+import fr.maxlego08.essentials.api.dto.PublicHomeDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
 import fr.maxlego08.essentials.api.dto.StepDTO;
 import fr.maxlego08.essentials.api.dto.UserDTO;
@@ -22,6 +24,7 @@ import fr.maxlego08.essentials.api.dto.VaultItemDTO;
 import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.steps.Step;
 import fr.maxlego08.essentials.api.storage.IStorage;
@@ -231,13 +234,11 @@ public class JsonStorage extends StorageHelper implements IStorage {
         User user = getUser(uniqueId);
         if (user == null) {
             user = createOrLoad(uniqueId, "");
-            user.setHomes(List.of(new HomeDTO(locationAsString(home.getLocation()), home.getName(), home.getMaterial() == null ? null : home.getMaterial().name())));
-            User finalUser = user;
-            this.plugin.getScheduler().runAsync(wrappedTask -> {
-                Persist persist = this.plugin.getPersist();
-                persist.save(finalUser, getUserFile(uniqueId));
-            });
-            return;
+        }
+        // Ensure the home is present in the in-memory list before saving.
+        // The normal /sethome path already added it; the import path calls this directly without pre-adding.
+        if (user.getHome(home.getName()).isEmpty()) {
+            user.getHomes().add(home);
         }
         this.saveFileAsync(uniqueId);
     }
@@ -266,6 +267,80 @@ public class JsonStorage extends StorageHelper implements IStorage {
     @Override
     public void getHomes(UUID uuid, Consumer<List<Home>> consumer) {
         consumer.accept(createOrLoad(uuid, "").getHomes());
+    }
+
+    @Override
+    public void updateHomeSocial(UUID uniqueId, Home home) {
+        this.saveFileAsync(uniqueId);
+    }
+
+    @Override
+    public void addHomeShare(UUID owner, String homeName, UUID target) {
+        this.saveFileAsync(owner);
+    }
+
+    @Override
+    public void removeHomeShare(UUID owner, String homeName, UUID target) {
+        this.saveFileAsync(owner);
+    }
+
+    @Override
+    public void removeAllHomeShares(UUID owner, String homeName) {
+        this.saveFileAsync(owner);
+    }
+
+    @Override
+    public void getPublicHomes(Consumer<List<PublicHomeDTO>> consumer) {
+        async(() -> {
+            List<PublicHomeDTO> result = new ArrayList<>();
+            java.util.Set<UUID> seen = new java.util.HashSet<>();
+
+            // Online / cached users first (freshest data)
+            for (User user : this.users.values()) {
+                seen.add(user.getUniqueId());
+                collectPublicHomes(user, result);
+            }
+
+            // Then scan the offline user files on disk
+            File[] files = getFolder().listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+            if (files != null) {
+                for (File file : files) {
+                    try {
+                        UUID uuid = UUID.fromString(file.getName().substring(0, file.getName().length() - 5));
+                        if (!seen.add(uuid)) continue;
+                        User user = this.plugin.getPersist().load(User.class, file);
+                        if (user != null) collectPublicHomes(user, result);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+
+            consumer.accept(result);
+        });
+    }
+
+    private void collectPublicHomes(User user, List<PublicHomeDTO> result) {
+        for (Home home : user.getHomes()) {
+            if (home.isPublic()) {
+                result.add(new PublicHomeDTO(user.getUniqueId(), home.getName(), locationAsString(home.getLocation()), home.getMaterial() == null ? null : home.getMaterial().name(), home.getCategory()));
+            }
+        }
+    }
+
+    @Override
+    public void isHomeSharedWith(UUID owner, String homeName, UUID target, Consumer<Boolean> consumer) {
+        User user = createOrLoad(owner, "");
+        consumer.accept(user.getHomeShares(homeName).contains(target));
+    }
+
+    @Override
+    public void addIgnore(UUID uniqueId, UUID ignoredId) {
+        this.saveFileAsync(uniqueId);
+    }
+
+    @Override
+    public void removeIgnore(UUID uniqueId, UUID ignoredId) {
+        this.saveFileAsync(uniqueId);
     }
 
     @Override
@@ -377,6 +452,69 @@ public class JsonStorage extends StorageHelper implements IStorage {
     }
 
     @Override
+    public void addMailMessage(MailMessage mailMessage) {
+        UUID uniqueId = mailMessage.getUniqueId();
+
+        User user = this.users.get(uniqueId);
+        if (user != null) {
+            // The message was already added to the online user, only the file has to be written
+            this.saveFileAsync(uniqueId);
+            return;
+        }
+
+        // The receiver is offline, the file is loaded, updated and saved without caching the user
+        async(() -> updateOfflineUser(uniqueId, offlineUser -> offlineUser.addMailMessage(mailMessage)));
+    }
+
+    @Override
+    public void markMailMessagesAsRead(UUID uniqueId) {
+        if (this.users.containsKey(uniqueId)) {
+            this.saveFileAsync(uniqueId);
+            return;
+        }
+        async(() -> updateOfflineUser(uniqueId, offlineUser -> offlineUser.getMailMessages().forEach(mailMessage -> mailMessage.setRead(true))));
+    }
+
+    @Override
+    public void clearMailMessages(UUID uniqueId) {
+        if (this.users.containsKey(uniqueId)) {
+            this.saveFileAsync(uniqueId);
+            return;
+        }
+        async(() -> updateOfflineUser(uniqueId, offlineUser -> offlineUser.getMailMessages().clear()));
+    }
+
+    @Override
+    public List<MailMessageDTO> getMailMessages(UUID uniqueId) {
+
+        User user = this.users.get(uniqueId);
+        if (user == null) {
+            user = this.plugin.getPersist().load(User.class, getUserFile(uniqueId));
+            if (user == null) return new ArrayList<>();
+        }
+
+        return user.getMailMessages().stream().map(mailMessage -> new MailMessageDTO(mailMessage.getId(), mailMessage.getUniqueId(), mailMessage.getSenderId(), mailMessage.getSenderName(), mailMessage.getContent(), mailMessage.isRead(), mailMessage.getCreatedAt())).toList();
+    }
+
+    /**
+     * Loads the file of an offline user, applies the given change and saves the file back.
+     * The user is never put in the online users cache.
+     *
+     * @param uniqueId the UUID of the offline user
+     * @param consumer the change to apply
+     */
+    private void updateOfflineUser(UUID uniqueId, Consumer<User> consumer) {
+        File file = getUserFile(uniqueId);
+        Persist persist = this.plugin.getPersist();
+
+        User offlineUser = persist.load(User.class, file);
+        if (offlineUser == null) return; // The player never joined the server
+
+        consumer.accept(offlineUser);
+        persist.save(offlineUser, file);
+    }
+
+    @Override
     public List<UserEconomyRankingDTO> getEconomyRanking(Economy economy) {
         return new ArrayList<>();
     }
@@ -480,6 +618,11 @@ public class JsonStorage extends StorageHelper implements IStorage {
     @Override
     public long getFlySeconds(UUID uniqueId) {
         return 0;
+    }
+
+    @Override
+    public void updatePlayerTimeWeather(UUID uniqueId, long playerTime, String playerWeather) {
+        this.saveFileAsync(uniqueId);
     }
 
     @Override

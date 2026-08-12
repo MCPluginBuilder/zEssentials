@@ -1,12 +1,12 @@
 plugins {
     `java-library`
     id("com.gradleup.shadow") version "9.0.0-beta11"
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19" apply false
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21" apply false
     id("re.alwyn974.groupez.repository") version "1.0.0"
 }
 
 group = "fr.maxlego08.essentials"
-version = "1.0.3.7"
+version = "1.0.3.8"
 
 extra.set("targetFolder", file("target/"))
 extra.set("targetFolderDiscord", file("target-discord/"))
@@ -43,6 +43,9 @@ allprojects {
     java {
         withSourcesJar()
 
+        // Allow the Java 21 main module to depend on the Java 25 NMS module for Minecraft 26.x.
+        disableAutoTargetJvm()
+
         if (!project.path.startsWith(":NMS:")) {
             withJavadocJar()
         }
@@ -67,7 +70,7 @@ allprojects {
 
     dependencies {
 //        compileOnly("fr.maxlego08.menu:zmenu-api:1.1.0.0")
-        compileOnly(files("libs/zMenu-1.1.1.2.jar"))
+        compileOnly(files("libs/zMenu-1.1.1.6.jar"))
 
         compileOnly("fr.maxlego08.sarah:sarah:1.23")
         compileOnly("com.tcoded:FoliaLib:0.5.1")
@@ -81,19 +84,22 @@ dependencies {
 
     api(project(":API"))
 
-    api(project(":NMS:V1_20_4", configuration = "reobf"))
-    api(project(":NMS:V1_20_6", configuration = "reobf"))
-    api(project(":NMS:V1_21", configuration = "reobf"))
-    api(project(":NMS:V1_21_1", configuration = "reobf"))
-    api(project(":NMS:V1_21_3", configuration = "reobf"))
-    api(project(":NMS:V1_21_4", configuration = "reobf"))
-    api(project(":NMS:V1_21_5", configuration = "reobf"))
-    api(project(":NMS:V1_21_6", configuration = "reobf"))
-    api(project(":NMS:V1_21_7", configuration = "reobf"))
-    api(project(":NMS:V1_21_8", configuration = "reobf"))
-    api(project(":NMS:V1_21_9", configuration = "reobf"))
-    api(project(":NMS:V1_21_10", configuration = "reobf"))
-    api(project(":NMS:V1_21_11", configuration = "reobf"))
+    // Since Minecraft 1.20.5 Paper ships a Mojang-mapped runtime, and since 26.1 Spigot
+    // reobfuscation is gone entirely. Every NMS module is therefore Mojang-mapped
+    // (MOJANG_PRODUCTION) and consumed as a plain project dependency (no "reobf" variant).
+    api(project(":NMS:V1_20_6"))
+    api(project(":NMS:V1_21"))
+    api(project(":NMS:V1_21_1"))
+    api(project(":NMS:V1_21_3"))
+    api(project(":NMS:V1_21_4"))
+    api(project(":NMS:V1_21_5"))
+    api(project(":NMS:V1_21_6"))
+    api(project(":NMS:V1_21_7"))
+    api(project(":NMS:V1_21_8"))
+    api(project(":NMS:V1_21_9"))
+    api(project(":NMS:V1_21_10"))
+    api(project(":NMS:V1_21_11"))
+    api(project(":NMS:V26_2"))
 
     rootProject.subprojects.filter { it.path.startsWith(":Hooks:") }.forEach { subproject ->
         api(project(subproject.path))
@@ -107,7 +113,7 @@ tasks {
         relocate("fr.mrmicky.fastboard", "fr.maxlego08.essentials.libs.fastboard")
 
         manifest {
-            attributes["paperweight-mappings-namespace"] = "spigot"
+            attributes["paperweight-mappings-namespace"] = "mojang"
         }
 
         rootProject.extra.properties["sha"]?.let { sha ->

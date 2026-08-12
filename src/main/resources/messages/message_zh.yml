@@ -312,7 +312,7 @@ description-afk: 切换挂机状态
 description-craft: 打开工作台
 description-enchanting: 打开附魔台
 description-invsee: 打开玩家的背包
-description-compact: 压缩材料
+description-compact: "将材料压缩成方块，别名：/blocks, /condense"
 description-hat: 给自己做一个漂亮的帽子
 description-tp: 传送到一名玩家
 description-tp-self: 将一名玩家传送到您的位置
@@ -384,7 +384,7 @@ description-lag-world: 显示世界中实体的详细统计
 description-lag-clear: 在世界或全局删除实体
 description-lag-clear-countdown: 在延迟后删除实体
 description-bottom: 传送到底部
-description-compact-all: 压缩库存中的物品
+description-compact-all: "压缩背包中的所有物品，别名：/blocksall, /condenseall"
 description-version: 显示插件版本
 description-kill-all: 杀死实体
 description-seen: 显示玩家信息
@@ -441,6 +441,10 @@ description-mail-give: 给玩家的邮箱赠送一个物品
 description-mail-give-hand: 将你手中的物品发送到玩家的邮箱
 description-mail-giveall: 给所有玩家的邮箱赠送物品
 description-mail-giveall-hand: 将你手中的物品发送到所有在线玩家的邮箱
+description-mail-send: "向玩家发送邮件，无论其是否在线"
+description-mail-read: "阅读你收到的邮件"
+description-mail-send-all: "向所有在线玩家发送邮件"
+description-mail-clear-messages: "删除玩家的邮件"
 description-voteparty-information: 显示投票派对
 description-voteparty-set: 设置投票派对所需的票数
 description-voteparty-add: 向投票派对添加票数
@@ -1062,8 +1066,91 @@ description-vault-show: 显示玩家的保管箱
 description-worldedit-cancel: 取消当前选择
 experience-taken: "<success>你刚刚从 <white>%player%<success> 处扣除了 <white>%amount% %type%<success>。"
 mailbox-clear: "<success>你刚刚清空了 &f%player%<success> 的信箱。"
+
+mailbox-message-send: "<success>你的邮件已发送给 &f%player%<success>。"
+mailbox-message-receive: "<primary>&f%player% <primary>给你发送了一封邮件 &8(&f/mail read&8)"
+mailbox-message-send-all: "<success>你的邮件已发送给 &f%amount% <success>名玩家。"
+mailbox-message-notify: "<primary>你有 &f%amount% <primary>封未读邮件，请使用 <click:run_command:'/mail read'><hover:show_text:'&f点击阅读你的邮件'>&f/mail read</hover></click><primary>。"
+mailbox-message-empty: "<error>你没有任何邮件。"
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>你的邮件 <secondary>(&f%amount%<secondary>)"
+    - ""
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>使用 <click:run_command:'/mail clearmessages'><hover:show_text:'&f点击删除你的邮件'>&f/mail clearmessages</hover></click><secondary> 来删除它们。"
+    - ""
+mailbox-message-clear: "<success>你刚刚删除了 &f%player%<success> 的邮件。"
+mailbox-message-self: "<error>你不能给自己发送邮件。"
+mailbox-message-mute: "<error>你被禁言时无法发送邮件。"
+mailbox-message-ignore: "<error>&f%player% <error>不想收到你的邮件。"
+mailbox-message-full: "<error>&f%player% <error>的邮箱已满。"
+mailbox-message-too-long: "<error>你的邮件不能超过 &f%max% <error>个字符。"
 step-already-exist: "<error>步骤 &f%step% <error>已经开始。"
 step-doesnt-exist: "<error>步骤 &f%step% <error>不存在。"
 step-doesnt-started: "<error>步骤 &f%step% <error>尚未开始。"
 teleport-random-start: "&7正在寻找目的地……请不要移动。"
 worldedit-permission-error: "<error>你不能在这里使用 WorldEdit。"
+
+# 忽略、提示音与传送到其他玩家
+command-tp-other: "&7您刚刚将 #34cfe0%player% &7传送到了 #34cfe0%target%&7。"
+description-ping-sound: "切换聊天提及提示音"
+command-ping-sound-enable: "&7聊天提及提示音 <success>启用 &7给 &f%player%<success>。"
+command-ping-sound-disable: "&7聊天提及提示音 <error>禁用 &7给 &f%player%<error>。"
+description-ignore: "忽略一名玩家，屏蔽他们的私信和传送请求"
+description-unignore: "停止忽略一名玩家"
+description-ignore-list: "显示您正在忽略的玩家列表"
+command-ignore-add: "<success>您现在正在忽略 &f%player%<success>。您将不再收到他们的私信或传送请求。"
+command-ignore-remove: "<success>您不再忽略 &f%player%<success>。"
+command-ignore-already: "<error>您已经在忽略 &f%player%<error>。"
+command-ignore-not: "<error>您没有在忽略 &f%player%<error>。"
+command-ignore-self: "<error>您不能忽略自己。"
+command-ignore-list-empty: "<error>您没有在忽略任何人。"
+command-ignore-list-header: "<success>您正在忽略 &f%count% <success>名玩家："
+command-ignore-list-line: "&7- &f%player%"
+command-message-ignore-player: "<error>您不能向 #34cfe0%player%<error> 发送私信，他们正在忽略您。"
+description-del-home-other: "删除另一名玩家的一个家"
+
+# 家系统（公开、分享、类别、收藏、预览、导入）
+description-home-public: "将您的某个家设为公开"
+description-public-homes: "列出公开的家"
+description-home-share: "与一名玩家分享一个家"
+description-home-unshare: "停止与一名玩家分享一个家"
+description-home-shares: "列出一个家被分享给的玩家"
+description-home-category: "设置一个家的类别"
+description-home-favorite: "将一个家切换为收藏"
+description-home-import: "从另一个插件导入家"
+command-home-feature-disabled: "<error>此家功能在本服务器上已禁用。"
+command-home-public-enable: "<success>您的家 &f%name%<success> 现在是公开的。"
+command-home-public-disable: "<success>您的家 &f%name%<success> 不再是公开的。"
+command-home-public-limit: "<error>您已达到公开家的最大数量 (&f%max%<error>)。"
+command-home-not-accessible: "<error>玩家 &f%player%<error> 的家 &f%name%<error> 您无法访问。"
+command-public-homes-header: "<success>公开的家 (&f%count%<success>)："
+command-public-homes-line: "&7- &f%player%&7:&f%name% <click:run_command:'/home %player%:%name%'><hover:show_text:'&7传送到此家'><#34cfe0>[传送]</click></hover>"
+command-public-homes-empty: "<error>没有公开的家。"
+command-home-share-add: "<success>您已将您的家 &f%name%<success> 分享给 &f%player%<success>。"
+command-home-share-remove: "<success>您已停止将您的家 &f%name%<success> 分享给 &f%player%<success>。"
+command-home-share-already: "<error>您的家 &f%name%<error> 已经分享给 &f%player%<error> 了。"
+command-home-share-not: "<error>您的家 &f%name%<error> 没有分享给 &f%player%<error>。"
+command-home-share-self: "<error>您不能将家分享给自己。"
+command-home-share-limit: "<error>您已达到此家的最大分享数量 (&f%max%<error>)。"
+command-home-share-list-header: "<success>家 &f%name%<success> 已分享给 &f%count% <success>名玩家："
+command-home-share-list-line: "&7- &f%player%"
+command-home-share-list-empty: "<error>家 &f%name%<error> 没有分享给任何人。"
+command-home-category-set: "<success>您的家 &f%name%<success> 的类别现在是 &f%category%<success>。"
+command-home-category-reset: "<success>您的家 &f%name%<success> 的类别已被移除。"
+command-home-category-invalid: "<error>无效的类别名称。"
+command-home-favorite-add: "<success>您的家 &f%name%<success> 现在已被收藏。"
+command-home-favorite-remove: "<success>您的家 &f%name%<success> 已不再被收藏。"
+command-home-preview: "&7家 &f%name% &8- &7%world% &8(&7%x%&8, &7%y%&8, &7%z%&8) <click:run_command:'/home %name% confirm'><#34cfe0>[传送]</click>"
+command-home-import-start: "<success>正在从 &f%source%<success> 导入家……"
+command-home-import-done: "<success>导入完成：&f%imported% <success>个已导入，&f%skipped% <success>个已跳过，&f%errors% <success>个错误。"
+command-home-import-unknown: "<error>未知的导入来源 &f%source%<error>。可用：essentialsx。"
+command-home-import-error: "<error>导入过程中发生错误，请检查控制台。"

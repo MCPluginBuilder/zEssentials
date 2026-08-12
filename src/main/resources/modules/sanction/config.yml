@@ -38,6 +38,29 @@ unban-default-reason: "The ban hammer gives you the right to return"
 # Date format used for sanctions
 date-format: "yyyy-MM-dd HH:mm:ss"
 
+# Settings of the /seen command.
+# Each line can be disabled globally here, even for operators.
+# The permissions below are still required when the option is enabled.
+
+# Show the UUID of the player
+seen-show-uuid: true
+
+# Show the IP addresses used by the player
+# Requires the permission essentials.seen.show.ip
+# Set this to false if you never want the IP to be displayed, even to an operator
+seen-show-ip: true
+
+# Show the last known location of the player
+# Requires the permission essentials.seen.show.last.location
+seen-show-last-location: true
+
+# Show the date of the first connection of the player
+# Requires the permission essentials.seen.show.created.at
+seen-show-created-at: true
+
+# Show the total playtime of the player
+seen-show-playtime: true
+
 # Materials are used for sanction_history inventory
 
 # Material used for kicks

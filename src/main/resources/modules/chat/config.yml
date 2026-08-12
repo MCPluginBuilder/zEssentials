@@ -38,9 +38,6 @@ enable-alphanumeric-regex: true
 # Check whether the message contains links
 enable-link-regex: true
 
-# Remove images that players are trying to put in the chat, for example: the message 'hey:auction:' will become: 'hey auction'
-enable-itemadders-font-regex: true
-
 # Allows to apply a dynamic cooldown between each message of a player, the more the player will spam the more he will have a great cooldown
 enable-chat-dynamic-cooldown: true
 
@@ -61,7 +58,7 @@ enable-chat-format: true
 enable-link-transform: true
 
 # Stores all player messages in the database. Works only with MYSQL storage
-# Also provides access to all player messages with /sc command
+# Also provides access to all player messages with the /chathistory command
 enable-chat-messages: true
 
 # Regex to check allowed characters
@@ -74,9 +71,6 @@ link-regex: '[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%
 
 # Regex to check pub message
 pub-regex: '.*(&[0-9a-fk-or]|#[0-9a-fA-F]{6}|%[^%]+%|<[^>]+>).*'
-
-# Regex to check itemAdders font
-itemadders-font-regex: '(?<=:)(.*?)(?=\s*\:)'
 
 # Allows to activate the flood check in the message, if the player will write messages with too many characters in capital letter, the message will be blocked
 enable-caps: true

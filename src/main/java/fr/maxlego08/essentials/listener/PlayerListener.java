@@ -12,6 +12,7 @@ import fr.maxlego08.essentials.storage.ConfigStorage;
 import fr.maxlego08.essentials.zutils.utils.TimerBuilder;
 import fr.maxlego08.essentials.zutils.utils.ZUtils;
 import org.bukkit.Material;
+import org.bukkit.WeatherType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Player;
@@ -224,6 +225,21 @@ public class PlayerListener extends ZUtils implements Listener {
             if (!hasPermission(player, Permission.ESSENTIALS_SPEED)) {
                 player.setFlySpeed(0.1f);
                 player.setWalkSpeed(0.2f);
+            }
+
+            // Re-apply persisted per-player time & weather (/ptime, /pweather)
+            if (user != null) {
+                long fixedTime = user.getPlayerTime();
+                if (fixedTime != 0) {
+                    long time = player.getPlayerTime();
+                    time -= time % 24000L;
+                    time += 24000L + fixedTime;
+                    player.setPlayerTime(time, false);
+                }
+                String fixedWeather = user.getPlayerWeather();
+                if (fixedWeather != null && fixedWeather.equalsIgnoreCase("DOWNFALL")) {
+                    player.setPlayerWeather(WeatherType.DOWNFALL);
+                }
             }
         }, 1);
     }

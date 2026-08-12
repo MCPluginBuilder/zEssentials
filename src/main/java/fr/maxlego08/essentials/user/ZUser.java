@@ -11,6 +11,7 @@ import fr.maxlego08.essentials.api.event.events.user.UserEconomyUpdateEvent;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.kit.Kit;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.storage.IStorage;
@@ -50,7 +51,10 @@ public class ZUser extends ZUtils implements User {
     private final Map<Option, Boolean> options = new HashMap<>();
     private final Map<String, BigDecimal> balances = new HashMap<>();
     private final List<Home> homes = new ArrayList<>();
+    private final Map<String, Set<UUID>> homeShares = new HashMap<>();
+    private final List<UUID> ignoredPlayers = new ArrayList<>();
     private final List<MailBoxItem> mailBoxItems = new ArrayList<>();
+    private final List<MailMessage> mailMessages = new ArrayList<>();
     private final DynamicCooldown dynamicCooldown = new DynamicCooldown();
     private final Selection selection = new ZSelection();
     private WorldEditTask worldEditTask;
@@ -77,6 +81,8 @@ public class ZUser extends ZUtils implements User {
     private Map<String, Long> lastVotes = new HashMap<>();
     private Home currentDeleteHome;
     private long flySeconds;
+    private long playerTime;
+    private String playerWeather;
     private DiscordAccount discordAccount;
     private long lastActiveTime = System.currentTimeMillis();
     private boolean manualAfk;
@@ -126,7 +132,32 @@ public class ZUser extends ZUtils implements User {
 
     @Override
     public boolean isIgnore(UUID uniqueId) {
-        return false;
+        return this.ignoredPlayers.contains(uniqueId);
+    }
+
+    @Override
+    public boolean addIgnore(UUID uniqueId) {
+        if (this.ignoredPlayers.contains(uniqueId)) return false;
+        this.ignoredPlayers.add(uniqueId);
+        this.getStorage().addIgnore(this.uniqueId, uniqueId);
+        return true;
+    }
+
+    @Override
+    public boolean removeIgnore(UUID uniqueId) {
+        if (!this.ignoredPlayers.remove(uniqueId)) return false;
+        this.getStorage().removeIgnore(this.uniqueId, uniqueId);
+        return true;
+    }
+
+    @Override
+    public List<UUID> getIgnoredPlayers() {
+        return this.ignoredPlayers;
+    }
+
+    @Override
+    public void setIgnoredPlayers(List<IgnoreDTO> ignoredPlayers) {
+        this.ignoredPlayers.addAll(ignoredPlayers.stream().map(IgnoreDTO::ignored_id).toList());
     }
 
     @Override
@@ -188,9 +219,8 @@ public class ZUser extends ZUtils implements User {
             return;
         }
 
-        // Check if target user has disabled teleport requests
-        if (targetUser.getOption(Option.TELEPORT_REQUEST_DISABLE)) {
-            message(this, Message.COMMAND_TELEPORT_REQUEST_DISABLED, targetUser);
+        if (targetUser.getOption(Option.TELEPORT_HERE_REQUEST_DISABLE)) {
+            message(this, Message.COMMAND_TELEPORT_HERE_REQUEST_DISABLED, targetUser);
             return;
         }
 
@@ -671,13 +701,17 @@ public class ZUser extends ZUtils implements User {
             return false;
         }
 
-        AtomicReference<Material> material = new AtomicReference<>(null);
-        getHome(name).ifPresent(home -> material.set(home.getMaterial()));
+        // Preserve the existing home's material and social state (public/category/favorite) when overwriting
+        Optional<Home> existing = getHome(name);
+        Material material = existing.map(Home::getMaterial).orElse(null);
+        boolean isPublic = existing.map(Home::isPublic).orElse(false);
+        String category = existing.map(Home::getCategory).orElse(null);
+        boolean favorite = existing.map(Home::isFavorite).orElse(false);
 
         // Delete home with the same name before
         this.homes.removeIf(home -> home.getName().equalsIgnoreCase(name));
 
-        Home home = new ZHome(new SafeLocation(location), name, material.get());
+        Home home = new ZHome(new SafeLocation(location), name, material, isPublic, category, favorite);
         this.homes.add(home);
         this.getStorage().upsertHome(this.uniqueId, home);
 
@@ -698,13 +732,53 @@ public class ZUser extends ZUtils implements User {
     public void setHomes(List<HomeDTO> homeDTOS) {
         this.homes.addAll(homeDTOS.stream().map(homeDTO -> {
             try {
-                return new ZHome(stringAsLocation(homeDTO.location()), homeDTO.name(), homeDTO.material() == null ? null : Material.valueOf(homeDTO.material()));
+                boolean isPublic = homeDTO.is_public() != null && homeDTO.is_public();
+                boolean favorite = homeDTO.is_favorite() != null && homeDTO.is_favorite();
+                return new ZHome(stringAsLocation(homeDTO.location()), homeDTO.name(), homeDTO.material() == null ? null : Material.valueOf(homeDTO.material()), isPublic, homeDTO.category(), favorite);
             } catch (Exception exception) {
                 plugin.getLogger().severe("Impossible to load the home " + homeDTO.name() + " for " + this.name + " Debug: " + homeDTO);
                 exception.printStackTrace();
             }
             return null;
         }).filter(Objects::nonNull).toList());
+    }
+
+    @Override
+    public void saveHomeSocial(Home home) {
+        this.getStorage().updateHomeSocial(this.uniqueId, home);
+    }
+
+    @Override
+    public void setHomeShares(List<HomeShareDTO> shares) {
+        for (HomeShareDTO share : shares) {
+            this.homeShares.computeIfAbsent(share.home_name().toLowerCase(), k -> new HashSet<>()).add(share.target_id());
+        }
+    }
+
+    @Override
+    public Set<UUID> getHomeShares(String homeName) {
+        return this.homeShares.getOrDefault(homeName.toLowerCase(), new HashSet<>());
+    }
+
+    @Override
+    public Map<String, Set<UUID>> getAllHomeShares() {
+        return this.homeShares;
+    }
+
+    @Override
+    public boolean addHomeShare(String homeName, UUID target) {
+        Set<UUID> targets = this.homeShares.computeIfAbsent(homeName.toLowerCase(), k -> new HashSet<>());
+        if (!targets.add(target)) return false;
+        this.getStorage().addHomeShare(this.uniqueId, homeName, target);
+        return true;
+    }
+
+    @Override
+    public boolean removeHomeShare(String homeName, UUID target) {
+        Set<UUID> targets = this.homeShares.get(homeName.toLowerCase());
+        if (targets == null || !targets.remove(target)) return false;
+        this.getStorage().removeHomeShare(this.uniqueId, homeName, target);
+        return true;
     }
 
     @Override
@@ -715,7 +789,9 @@ public class ZUser extends ZUtils implements User {
     @Override
     public void removeHome(String name) {
         this.homes.removeIf(home -> home.getName().equalsIgnoreCase(name));
+        this.homeShares.remove(name.toLowerCase());
         this.getStorage().deleteHome(this.uniqueId, name);
+        this.getStorage().removeAllHomeShares(this.uniqueId, name);
     }
 
     @Override
@@ -909,6 +985,28 @@ public class ZUser extends ZUtils implements User {
     }
 
     @Override
+    public List<MailMessage> getMailMessages() {
+        return this.mailMessages;
+    }
+
+    @Override
+    public void setMailMessages(List<MailMessageDTO> mailMessages) {
+        this.mailMessages.clear();
+        this.mailMessages.addAll(mailMessages.stream().map(MailMessage::new).toList());
+    }
+
+    @Override
+    public void addMailMessage(MailMessage mailMessage) {
+        this.mailMessages.add(mailMessage);
+        this.getStorage().addMailMessage(mailMessage);
+    }
+
+    @Override
+    public long countUnreadMailMessages() {
+        return this.mailMessages.stream().filter(mailMessage -> !mailMessage.isRead()).count();
+    }
+
+    @Override
     public DynamicCooldown getDynamicCooldown() {
         return dynamicCooldown;
     }
@@ -942,6 +1040,8 @@ public class ZUser extends ZUtils implements User {
         this.lastLocation = stringAsLocation(userDTO.last_location());
         this.freeze = userDTO.frozen() != null && userDTO.frozen();
         this.flySeconds = userDTO.fly_seconds();
+        this.playerTime = userDTO.player_time();
+        this.playerWeather = userDTO.player_weather();
     }
 
     @Override
@@ -1056,6 +1156,34 @@ public class ZUser extends ZUtils implements User {
     public void removeFlySeconds(long seconds) {
         this.flySeconds -= seconds;
         getStorage().upsertFlySeconds(this.uniqueId, this.flySeconds);
+    }
+
+    @Override
+    public long getPlayerTime() {
+        return this.playerTime;
+    }
+
+    @Override
+    public void setPlayerTime(long playerTime) {
+        this.playerTime = playerTime;
+        getStorage().updatePlayerTimeWeather(this.uniqueId, this.playerTime, this.playerWeather);
+    }
+
+    @Override
+    public String getPlayerWeather() {
+        return this.playerWeather;
+    }
+
+    @Override
+    public void setPlayerWeather(String playerWeather) {
+        this.playerWeather = playerWeather;
+        getStorage().updatePlayerTimeWeather(this.uniqueId, this.playerTime, this.playerWeather);
+    }
+
+    @Override
+    public void loadPlayerTimeWeather(long playerTime, String playerWeather) {
+        this.playerTime = playerTime;
+        this.playerWeather = playerWeather;
     }
 
     @Override

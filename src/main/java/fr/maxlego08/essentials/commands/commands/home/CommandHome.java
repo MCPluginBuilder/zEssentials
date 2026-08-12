@@ -9,6 +9,7 @@ import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.user.User;
 import fr.maxlego08.essentials.module.modules.HomeModule;
 import fr.maxlego08.essentials.zutils.utils.commands.VCommand;
+import org.bukkit.Location;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
@@ -30,6 +31,7 @@ public class CommandHome extends VCommand {
             }
             return new ArrayList<>();
         });
+        this.addOptionalArg("confirm");
     }
 
     @Override
@@ -46,19 +48,22 @@ public class CommandHome extends VCommand {
             return CommandResultType.SUCCESS;
         }
 
-
-        // For /home Maxlego08:<home name>
-        if (homeName.contains(":") && hasPermission(sender, Permission.ESSENTIALS_HOME_OTHER)) {
+        // For /home Maxlego08:<home name> (admin teleport or public/shared visit)
+        if (homeName.contains(":")) {
 
             if (this.sender instanceof ConsoleCommandSender) return CommandResultType.SYNTAX_ERROR;
 
             String[] values = homeName.split(":", 2);
             String username = values[0];
             String home = values[1];
-            homeManager.teleport(this.user, username, home);
+
+            if (hasPermission(sender, Permission.ESSENTIALS_HOME_OTHER)) {
+                homeManager.teleport(this.user, username, home);
+            } else {
+                homeManager.visitHome(this.user, username, home);
+            }
             return CommandResultType.DEFAULT;
         }
-
 
         Optional<Home> optional = this.user.getHome(homeName);
         if (optional.isEmpty()) {
@@ -67,6 +72,19 @@ public class CommandHome extends VCommand {
         }
 
         Home home = optional.get();
+
+        // Optional preview before teleporting
+        HomeModule homeModule = plugin.getModuleManager().getModule(HomeModule.class);
+        String confirm = this.argAsString(1, null);
+        if (homeModule.isEnableHomePreview() && !"confirm".equalsIgnoreCase(confirm)) {
+            Location location = home.getLocation();
+            if (location != null && location.getWorld() != null) {
+                message(sender, Message.COMMAND_HOME_PREVIEW, "%name%", home.getName(), "%world%", location.getWorld().getName(), "%x%", location.getBlockX(), "%y%", location.getBlockY(), "%z%", location.getBlockZ());
+                // DEFAULT so the preview does not consume the /home cooldown (which would block the confirm step)
+                return CommandResultType.DEFAULT;
+            }
+        }
+
         homeManager.teleport(user, home);
 
         return CommandResultType.SUCCESS;

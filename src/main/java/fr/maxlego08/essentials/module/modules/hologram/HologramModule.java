@@ -19,7 +19,7 @@ import fr.maxlego08.essentials.api.utils.SafeLocation;
 import fr.maxlego08.essentials.module.ZModule;
 import fr.maxlego08.menu.api.exceptions.InventoryException;
 import fr.maxlego08.menu.api.utils.Loader;
-import fr.maxlego08.menu.common.utils.nms.NmsVersion;
+import fr.maxlego08.essentials.zutils.utils.NmsVersionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Animals;
@@ -291,7 +291,7 @@ public class HologramModule extends ZModule implements HologramManager {
     @Override
     public Hologram createHologram(HologramType hologramType, HologramConfiguration configuration, String fileName, String name, SafeLocation location) {
 
-        String version = NmsVersion.getCurrentVersion().name().replace("V_", "v");
+        String version = NmsVersionUtils.getNmsPackage();
         String className = String.format("fr.maxlego08.essentials.nms.%s.CraftHologram", version);
 
         try {

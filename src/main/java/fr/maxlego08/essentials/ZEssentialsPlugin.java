@@ -42,6 +42,7 @@ import fr.maxlego08.essentials.api.vote.VoteManager;
 import fr.maxlego08.essentials.api.waypoint.WayPointHelper;
 import fr.maxlego08.essentials.api.worldedit.WorldeditManager;
 import fr.maxlego08.essentials.buttons.ButtonHomes;
+import fr.maxlego08.essentials.buttons.ButtonPublicHomes;
 import fr.maxlego08.essentials.buttons.ButtonPayConfirm;
 import fr.maxlego08.essentials.buttons.ButtonTeleportationConfirm;
 import fr.maxlego08.essentials.buttons.ButtonTeleportationConfirmHere;
@@ -116,6 +117,7 @@ import fr.maxlego08.essentials.zutils.Metrics;
 import fr.maxlego08.essentials.zutils.ZPlugin;
 import fr.maxlego08.essentials.zutils.utils.ComponentMessageHelper;
 import fr.maxlego08.essentials.zutils.utils.DefaultBlockTracker;
+import fr.maxlego08.essentials.zutils.utils.NmsVersionUtils;
 import fr.maxlego08.essentials.zutils.utils.PlaceholderUtils;
 import fr.maxlego08.essentials.zutils.utils.VersionChecker;
 import fr.maxlego08.essentials.zutils.utils.ZServerStorage;
@@ -129,7 +131,7 @@ import fr.maxlego08.menu.api.ButtonManager;
 import fr.maxlego08.menu.api.InventoryManager;
 import fr.maxlego08.menu.api.loader.NoneLoader;
 import fr.maxlego08.menu.api.pattern.PatternManager;
-import fr.maxlego08.menu.common.utils.nms.NmsVersion;
+import fr.maxlego08.menu.api.utils.version.MinecraftVersion;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -255,7 +257,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
         this.registerListener(new PlayerListener(this));
         this.registerPlaceholder(UserPlaceholders.class);
         this.registerPlaceholder(UserItemsPlaceholders.class);
-        if (NmsVersion.getCurrentVersion().getVersion() >= NmsVersion.V_1_21.getVersion()) {
+        if (MinecraftVersion.getCurrentVersion().isAtLeast(MinecraftVersion.parse("1.21"))) {
             this.registerPlaceholder(UserItems1_21Placeholders.class);
         }
         this.registerPlaceholder(UserHomePlaceholders.class);
@@ -333,6 +335,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
         this.buttonManager.register(new NoneLoader(this, ButtonTeleportationConfirm.class, "ZESSENTIALS_TELEPORTATION_CONFIRM"));
         this.buttonManager.register(new NoneLoader(this, ButtonPayConfirm.class, "ZESSENTIALS_PAY_CONFIRM"));
         this.buttonManager.register(new NoneLoader(this, ButtonHomes.class, "ZESSENTIALS_HOMES"));
+        this.buttonManager.register(new NoneLoader(this, ButtonPublicHomes.class, "ZESSENTIALS_PUBLIC_HOMES"));
         this.buttonManager.register(new NoneLoader(this, ButtonSanctionInformation.class, "ZESSENTIALS_SANCTION_INFORMATION"));
         this.buttonManager.register(new NoneLoader(this, ButtonSanctions.class, "ZESSENTIALS_SANCTIONS"));
         this.buttonManager.register(new NoneLoader(this, ButtonKitPreview.class, "ZESSENTIALS_KIT_PREVIEW"));
@@ -811,7 +814,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
     @Override
     public WayPointHelper getWayPointHelper() {
         if (this.wayPointHelper == null) {
-            String version = NmsVersion.getCurrentVersion().name().replace("V_", "v");
+            String version = NmsVersionUtils.getNmsPackage();
             String className = String.format("fr.maxlego08.essentials.nms.%s.WayPointPacket", version);
 
             try {

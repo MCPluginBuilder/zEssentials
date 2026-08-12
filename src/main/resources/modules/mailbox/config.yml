@@ -16,3 +16,25 @@ enable: true
 # The expiration time of items when added to the mailbox
 # If the player does not recover his items with expiration they will be deleted permanently.
 expiration: 86400
+
+# Settings of the text mails, sent with /mail send <player> <message>
+# A mail can be sent to an offline player, it will be readable with /mail read on his next connection.
+
+# Notify the player when he connects and has unread mails
+message-notify-on-join: true
+
+# Delay in seconds before sending the notification, to avoid it being lost in the join messages
+message-notify-delay: 3
+
+# Maximum amount of mails a player can store, a new mail is refused when the limit is reached
+message-max-amount: 50
+
+# Maximum amount of characters of a mail
+message-max-length: 256
+
+# Delay in seconds between two mails sent by the same player
+# Players with the permission essentials.bypass.cooldown are not affected
+message-cooldown: 5
+
+# Date format used to display the date of a mail
+message-date-format: "yyyy-MM-dd HH:mm"

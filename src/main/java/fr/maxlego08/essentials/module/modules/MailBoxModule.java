@@ -1,6 +1,10 @@
 package fr.maxlego08.essentials.module.modules;
 
 import fr.maxlego08.essentials.ZEssentialsPlugin;
+import fr.maxlego08.essentials.api.commands.Permission;
+import fr.maxlego08.essentials.api.configuration.NonLoadable;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
+import fr.maxlego08.essentials.zutils.utils.TimerBuilder;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
 import fr.maxlego08.essentials.api.messages.Message;
@@ -12,7 +16,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.text.SimpleDateFormat;
+import java.util.concurrent.TimeUnit;
 
 import java.util.Date;
 import java.util.List;
@@ -20,7 +29,17 @@ import java.util.UUID;
 
 public class MailBoxModule extends ZModule {
 
+    // Do not make those fields final, javac would inline the constant and the configuration would be ignored
     private long expiration;
+    private boolean messageNotifyOnJoin = true;
+    private long messageNotifyDelay = 3;
+    private int messageMaxAmount = 50;
+    private int messageMaxLength = 256;
+    private long messageCooldown = 5;
+    private String messageDateFormat = "yyyy-MM-dd HH:mm";
+
+    @NonLoadable
+    private SimpleDateFormat simpleDateFormat;
 
     public MailBoxModule(ZEssentialsPlugin plugin) {
         super(plugin, "mailbox");
@@ -32,6 +51,193 @@ public class MailBoxModule extends ZModule {
 
         this.loadInventory("mailbox");
         this.loadInventory("mailbox_admin");
+
+        this.simpleDateFormat = new SimpleDateFormat(this.messageDateFormat);
+    }
+
+    /**
+     * Sends a text message to a player, online or not. The message is stored and can be read with /mail read.
+     *
+     * @param sender       the sender of the message, a player or the console
+     * @param receiverId   the UUID of the receiver
+     * @param receiverName the name of the receiver
+     * @param content      the message
+     */
+    public void sendMailMessage(CommandSender sender, UUID receiverId, String receiverName, String content) {
+
+        if (content.length() > this.messageMaxLength) {
+            message(sender, Message.MAILBOX_MESSAGE_TOO_LONG, "%max%", this.messageMaxLength);
+            return;
+        }
+
+        UUID senderId = sender instanceof Player player ? player.getUniqueId() : this.plugin.getConsoleUniqueId();
+        String senderName = sender instanceof Player player ? player.getName() : getMessage(Message.CONSOLE);
+
+        User senderUser = sender instanceof Player player ? this.plugin.getUser(player.getUniqueId()) : null;
+        if (senderUser != null) {
+
+            if (senderUser.getUniqueId().equals(receiverId)) {
+                message(sender, Message.MAILBOX_MESSAGE_SELF);
+                return;
+            }
+
+            if (senderUser.isMute()) {
+                message(sender, Message.MAILBOX_MESSAGE_MUTE);
+                return;
+            }
+
+            if (!checkCooldown(senderUser)) return;
+        }
+
+        User receiver = this.plugin.getUser(receiverId);
+        if (receiver != null) {
+
+            if (receiver.isIgnore(senderId)) {
+                message(sender, Message.MAILBOX_MESSAGE_IGNORE, "%player%", receiverName);
+                return;
+            }
+
+            if (receiver.getMailMessages().size() >= this.messageMaxAmount) {
+                message(sender, Message.MAILBOX_MESSAGE_FULL, "%player%", receiverName);
+                return;
+            }
+
+            receiver.addMailMessage(new MailMessage(receiverId, senderId, senderName, content, new Date()));
+            message(receiver, Message.MAILBOX_MESSAGE_RECEIVE, "%player%", senderName, "%message%", content);
+            message(sender, Message.MAILBOX_MESSAGE_SEND, "%player%", receiverName, "%message%", content);
+            return;
+        }
+
+        // The receiver is offline, the amount of stored messages must be read from the storage
+        this.plugin.getScheduler().runAsync(wrappedTask -> {
+
+            IStorage iStorage = getStorage();
+            if (iStorage.getMailMessages(receiverId).size() >= this.messageMaxAmount) {
+                message(sender, Message.MAILBOX_MESSAGE_FULL, "%player%", receiverName);
+                return;
+            }
+
+            iStorage.addMailMessage(new MailMessage(receiverId, senderId, senderName, content, new Date()));
+            message(sender, Message.MAILBOX_MESSAGE_SEND, "%player%", receiverName, "%message%", content);
+        });
+    }
+
+    /**
+     * Sends a text message to every online player.
+     *
+     * @param sender  the sender of the message
+     * @param content the message
+     */
+    public void sendMailMessageToAll(CommandSender sender, String content) {
+
+        if (content.length() > this.messageMaxLength) {
+            message(sender, Message.MAILBOX_MESSAGE_TOO_LONG, "%max%", this.messageMaxLength);
+            return;
+        }
+
+        UUID senderId = sender instanceof Player player ? player.getUniqueId() : this.plugin.getConsoleUniqueId();
+        String senderName = sender instanceof Player player ? player.getName() : getMessage(Message.CONSOLE);
+
+        int amount = 0;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+
+            User receiver = this.plugin.getUser(player.getUniqueId());
+            if (receiver == null || receiver.getUniqueId().equals(senderId)) continue;
+            if (receiver.getMailMessages().size() >= this.messageMaxAmount) continue;
+
+            receiver.addMailMessage(new MailMessage(receiver.getUniqueId(), senderId, senderName, content, new Date()));
+            message(receiver, Message.MAILBOX_MESSAGE_RECEIVE, "%player%", senderName, "%message%", content);
+            amount++;
+        }
+
+        message(sender, Message.MAILBOX_MESSAGE_SEND_ALL, "%amount%", amount, "%message%", content);
+    }
+
+    /**
+     * Displays the text messages of a user and marks them as read.
+     *
+     * @param user the user reading his messages
+     */
+    public void readMailMessages(User user) {
+
+        List<MailMessage> mailMessages = user.getMailMessages();
+        if (mailMessages.isEmpty()) {
+            message(user, Message.MAILBOX_MESSAGE_EMPTY);
+            return;
+        }
+
+        message(user, Message.MAILBOX_MESSAGE_HEADER, "%amount%", mailMessages.size());
+        for (MailMessage mailMessage : mailMessages) {
+            message(user, Message.MAILBOX_MESSAGE_LINE, "%player%", mailMessage.getSenderName(), "%date%", mailMessage.getCreatedAt() == null ? "" : this.simpleDateFormat.format(mailMessage.getCreatedAt()), "%message%", mailMessage.getContent());
+        }
+        message(user, Message.MAILBOX_MESSAGE_FOOTER);
+
+        if (user.countUnreadMailMessages() > 0) {
+            mailMessages.forEach(mailMessage -> mailMessage.setRead(true));
+            getStorage().markMailMessagesAsRead(user.getUniqueId());
+        }
+    }
+
+    /**
+     * Deletes every text message of a user.
+     *
+     * @param sender   the sender of the command
+     * @param uuid     the UUID of the user
+     * @param username the name of the user
+     */
+    public void clearMailMessages(CommandSender sender, UUID uuid, String username) {
+
+        // The list must be cleared before the storage call, the JSON storage saves the user
+        // asynchronously and would write the messages back
+        User user = getUser(uuid);
+        if (user != null) {
+            user.getMailMessages().clear();
+        }
+
+        getStorage().clearMailMessages(uuid);
+
+        message(sender, Message.MAILBOX_MESSAGE_CLEAR, "%player%", username);
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+
+        if (!this.messageNotifyOnJoin) return;
+
+        Player player = event.getPlayer();
+        this.plugin.getScheduler().runAtLocationLater(player.getLocation(), wrappedTask -> {
+
+            User user = this.plugin.getUser(player.getUniqueId());
+            if (user == null) return;
+
+            long unread = user.countUnreadMailMessages();
+            if (unread <= 0) return;
+
+            message(user, Message.MAILBOX_MESSAGE_NOTIFY, "%amount%", unread);
+        }, Math.max(1, this.messageNotifyDelay), TimeUnit.SECONDS);
+    }
+
+    /**
+     * Checks and registers the cooldown between two messages.
+     *
+     * @param user the sender
+     * @return true if the message can be sent
+     */
+    private boolean checkCooldown(User user) {
+
+        if (this.messageCooldown <= 0) return true;
+        if (user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) && this.plugin.getConfiguration().isEnableCooldownBypass()) {
+            return true;
+        }
+
+        String key = "mail-message-send";
+        if (user.isCooldown(key)) {
+            message(user, Message.COOLDOWN, "%cooldown%", TimerBuilder.getStringTime(user.getCooldown(key) - System.currentTimeMillis()));
+            return false;
+        }
+
+        user.addCooldown(key, this.messageCooldown);
+        return true;
     }
 
     public void addItemAndFix(UUID uuid, ItemStack itemStack) {

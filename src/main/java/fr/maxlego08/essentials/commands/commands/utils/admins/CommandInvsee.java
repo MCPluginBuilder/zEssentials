@@ -7,7 +7,6 @@ import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.nms.PlayerUtil;
 import fr.maxlego08.essentials.api.user.Option;
 import fr.maxlego08.essentials.zutils.utils.commands.VCommand;
-import fr.maxlego08.menu.common.utils.nms.NmsVersion;
 import org.bukkit.OfflinePlayer;
 
 import java.lang.reflect.Constructor;
@@ -40,7 +39,7 @@ public class CommandInvsee extends VCommand {
             message(sender, "&cOffline invsee is disabled for the moment.");
             /*if (!hasPermission(sender, Permission.ESSENTIALS_INVSEE_OFFLINE)) return CommandResultType.SYNTAX_ERROR;
 
-            String version = NmsVersion.getCurrentVersion().name().replace("V_", "v");
+            String version = NmsVersionUtils.getNmsPackage();
             String className = String.format("fr.maxlego08.essentials.nms.%s.PlayerUtils", version);
 
             try {

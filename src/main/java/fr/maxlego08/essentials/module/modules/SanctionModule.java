@@ -39,12 +39,18 @@ public class SanctionModule extends ZModule implements SanctionManager {
 
     private final ExpiringCache<UUID, User> expiringCache = new ExpiringCache<>(1000 * 60 * 60); // 1 hour cache
     // Default messages for kick and ban
-    private final String kickDefaultReason = "";
-    private final String banDefaultReason = "";
-    private final String muteDefaultReason = "";
-    private final String unmuteDefaultReason = "";
-    private final String unbanDefaultReason = "";
-    private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+    // Do not make those fields final, javac would inline the constant and the configuration would be ignored
+    private String kickDefaultReason = "";
+    private String banDefaultReason = "";
+    private String muteDefaultReason = "";
+    private String unmuteDefaultReason = "";
+    private String unbanDefaultReason = "";
+    private String dateFormat = "yyyy-MM-dd HH:mm:ss";
+    private boolean seenShowUuid = true;
+    private boolean seenShowIp = true;
+    private boolean seenShowLastLocation = true;
+    private boolean seenShowCreatedAt = true;
+    private boolean seenShowPlaytime = true;
     private final Material kickMaterial = Material.BOOK;
     private final Material banMaterial = Material.BOOK;
     private final Material muteMaterial = Material.BOOK;
@@ -346,18 +352,20 @@ public class SanctionModule extends ZModule implements SanctionManager {
         if (isOnline) sendOnline(sender, record);
         else sendOffline(sender, record);
 
-        message(sender, Message.COMMAND_SEEN_UUID, "%uuid%", uuid.toString());
+        if (this.seenShowUuid) {
+            message(sender, Message.COMMAND_SEEN_UUID, "%uuid%", uuid.toString());
+        }
 
-        if (hasPermission(sender, Permission.ESSENTIALS_SEEN_SHOW_IP)) {
+        if (this.seenShowIp && hasPermission(sender, Permission.ESSENTIALS_SEEN_SHOW_IP)) {
             message(sender, Message.COMMAND_SEEN_IP, "%ips%", record.playTimeDTOS().stream().map(timeDTO -> getMessage(Message.COMMAND_SEEN_ADDRESS, "%ip%", timeDTO.address())).distinct().collect(Collectors.joining(",")));
         }
 
-        if (user.last_location() != null && hasPermission(sender, Permission.ESSENTIALS_SEEN_SHOW_LAST_LOCATION)) {
+        if (this.seenShowLastLocation && user.last_location() != null && hasPermission(sender, Permission.ESSENTIALS_SEEN_SHOW_LAST_LOCATION)) {
             SafeLocation location = stringAsLocation(user.last_location());
             message(sender, Message.COMMAND_SEEN_LAST_LOCATION, "%x%", location.getBlockX(), "%z%", location.getBlockZ(), "%y%", location.getBlockY(), "%world%", location.getWorld());
         }
 
-        if (user.created_at() != null && hasPermission(sender, Permission.ESSENTIALS_SEEN_SHOW_CREATED_AT)) {
+        if (this.seenShowCreatedAt && user.created_at() != null && hasPermission(sender, Permission.ESSENTIALS_SEEN_SHOW_CREATED_AT)) {
             message(sender, Message.COMMAND_SEEN_FIRST_JOIN, "%created_at%", this.simpleDateFormat.format(user.created_at()));
         }
     }
@@ -369,12 +377,16 @@ public class SanctionModule extends ZModule implements SanctionManager {
             return;
         }
         message(sender, Message.COMMAND_SEEN_ONLINE, "%player%", record.userDTO().name(), "%date%", TimerBuilder.getStringTime(System.currentTimeMillis() - user.getCurrentSessionPlayTime()));
-        message(sender, Message.COMMAND_SEEN_PLAYTIME, "%playtime%", TimerBuilder.getStringTime(user.getPlayTime() * 1000));
+        if (this.seenShowPlaytime) {
+            message(sender, Message.COMMAND_SEEN_PLAYTIME, "%playtime%", TimerBuilder.getStringTime(user.getPlayTime() * 1000));
+        }
     }
 
     private void sendOffline(CommandSender sender, UserRecord record) {
         message(sender, Message.COMMAND_SEEN_OFFLINE, "%player%", record.userDTO().name(), "%date%", this.simpleDateFormat.format(record.userDTO().updated_at()));
-        message(sender, Message.COMMAND_SEEN_PLAYTIME, "%playtime%", TimerBuilder.getStringTime(record.userDTO().play_time() * 1000));
+        if (this.seenShowPlaytime) {
+            message(sender, Message.COMMAND_SEEN_PLAYTIME, "%playtime%", TimerBuilder.getStringTime(record.userDTO().play_time() * 1000));
+        }
     }
 
     @Override

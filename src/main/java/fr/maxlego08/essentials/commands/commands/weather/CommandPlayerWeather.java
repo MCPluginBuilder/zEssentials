@@ -27,10 +27,12 @@ public class CommandPlayerWeather extends VCommand {
         if (weather == null || weather.equalsIgnoreCase("sun") || weather.equalsIgnoreCase("clear")) {
 
             this.player.resetPlayerWeather();
+            if (this.user != null) this.user.setPlayerWeather(null);
             message(sender, Message.COMMAND_PLAYER_WEATHER_RESET);
         } else if (weather.equalsIgnoreCase("storm") || weather.equalsIgnoreCase("thunder")) {
 
             this.player.setPlayerWeather(WeatherType.DOWNFALL);
+            if (this.user != null) this.user.setPlayerWeather("DOWNFALL");
             message(sender, Message.COMMAND_PLAYER_WEATHER_DOWNFALL);
         }
 

@@ -59,3 +59,32 @@ home-usage-type: MAX
 # Material used by default for the homes button.
 # You can use a zMenu material loader here.
 default-home-material: BLUE_BED
+
+# Public homes: allow players to make a home visitable by everyone (/homepublic, /publichomes)
+# Players need the permission essentials.home.public to make a home public and essentials.home.visit to visit one.
+enable-public-homes: true
+
+# Maximum number of public homes per player (-1 for unlimited)
+max-public-homes: 3
+
+# How /publichomes displays the list of public homes:
+# CHAT      - a clickable chat message
+# INVENTORY - a paginated GUI (inventories/public_homes.yml)
+public-homes-display: CHAT
+
+# Shared homes: allow players to share a home with specific players (/homeshare, /homeunshare, /homeshares)
+# Players need the permission essentials.home.share.
+enable-shared-homes: true
+
+# Maximum number of players a single home can be shared with (-1 for unlimited)
+max-shared-per-home: 5
+
+# Categories: allow players to organise their homes by category (/homecategory)
+# Players need the permission essentials.home.category.
+enable-categories: true
+
+# Show favorite homes first in the home list (/homefavorite to toggle a favorite, permission essentials.home.favorite)
+favorite-first: true
+
+# Home preview: when enabled, /home <name> shows a preview with a clickable confirmation before teleporting
+enable-home-preview: false

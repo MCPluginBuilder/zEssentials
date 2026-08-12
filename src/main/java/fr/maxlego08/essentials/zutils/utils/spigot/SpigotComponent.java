@@ -4,6 +4,7 @@ import fr.maxlego08.essentials.api.EssentialsPlugin;
 import fr.maxlego08.essentials.api.messages.messages.BossBarMessage;
 import fr.maxlego08.essentials.api.messages.messages.TitleMessage;
 import fr.maxlego08.essentials.api.utils.component.ComponentMessage;
+import fr.maxlego08.essentials.zutils.utils.MessageUtils;
 import fr.maxlego08.menu.api.utils.Placeholders;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -45,13 +46,15 @@ public class SpigotComponent implements ComponentMessage {
     }
 
     @Override
-    public void sendBossBar(EssentialsPlugin plugin, Player player, BossBarMessage bossBarMessage) {
+    public void sendBossBar(EssentialsPlugin plugin, Player player, BossBarMessage bossBarMessage, Object... args) {
 
     }
 
     @Override
     public void sendTitle(Player player, TitleMessage titleMessage, Object... objects) {
-        player.sendTitle(titleMessage.title(), titleMessage.subtitle(), (int) titleMessage.start(), (int) titleMessage.time(), (int) titleMessage.end());
+        String title = MessageUtils.getString(titleMessage.title(), objects);
+        String subtitle = MessageUtils.getString(titleMessage.subtitle(), objects);
+        player.sendTitle(title, subtitle, (int) titleMessage.start(), (int) titleMessage.time(), (int) titleMessage.end());
     }
 
     @Override
