@@ -27,12 +27,13 @@ public class ZStorageManager extends ZUtils implements StorageManager {
 
     private final IStorage iStorage;
     private final EssentialsPlugin plugin;
+    private final StorageType storageType;
 
     public ZStorageManager(EssentialsPlugin plugin) {
         this.plugin = plugin;
-        StorageType storageType = plugin.getConfiguration().getStorageType();
-        this.iStorage = switch (storageType) {
-            case HIKARICP, SQLITE, MYSQL, MARIADB -> new SqlStorage(plugin, storageType);
+        this.storageType = plugin.getConfiguration().getStorageType();
+        this.iStorage = switch (this.storageType) {
+            case HIKARICP, SQLITE, MYSQL, MARIADB -> new SqlStorage(plugin, this.storageType);
             default -> new JsonStorage(plugin);
         };
     }
@@ -56,7 +57,7 @@ public class ZStorageManager extends ZUtils implements StorageManager {
 
     @Override
     public StorageType getType() {
-        return this.plugin.getStorageManager().getType();
+        return this.storageType;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
