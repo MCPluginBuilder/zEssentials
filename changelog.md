@@ -6,6 +6,8 @@
 
 # Unreleased
 
+# 1.0.3.8
+
 - Added **text mails** to the mailbox module, to send a message to a player who is not connected (`modules/mailbox/config.yml`):
     - `/mail send <player> <message>` works with an online or offline player, `/mail read` displays the received mails and marks them as read, `/mail clearmessages [player]` deletes them and `/mail sendall <message>` sends a mail to every online player
     - A player who connects with unread mails is notified with a clickable message (`message-notify-on-join`, `message-notify-delay`)
