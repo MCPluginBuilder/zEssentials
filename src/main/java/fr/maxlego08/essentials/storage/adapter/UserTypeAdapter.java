@@ -8,8 +8,10 @@ import fr.maxlego08.essentials.api.dto.CooldownDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
 import fr.maxlego08.essentials.api.dto.HomeShareDTO;
 import fr.maxlego08.essentials.api.dto.IgnoreDTO;
+import fr.maxlego08.essentials.api.dto.MailMessageDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
 import fr.maxlego08.essentials.api.home.Home;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.user.Option;
 import fr.maxlego08.essentials.api.user.User;
 import fr.maxlego08.essentials.api.utils.SafeLocation;
@@ -100,6 +102,21 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         }
         out.endArray();
 
+        out.name("mail-messages").beginArray();
+        for (MailMessage mailMessage : value.getMailMessages()) {
+            out.beginObject();
+            out.name("id").value(mailMessage.getId());
+            if (mailMessage.getSenderId() != null) {
+                out.name("sender-id").value(mailMessage.getSenderId().toString());
+            }
+            out.name("sender-name").value(mailMessage.getSenderName());
+            out.name("content").value(mailMessage.getContent());
+            out.name("is-read").value(mailMessage.isRead());
+            out.name("created-at").value(mailMessage.getCreatedAt() == null ? 0 : mailMessage.getCreatedAt().getTime());
+            out.endObject();
+        }
+        out.endArray();
+
         out.name("player-time").value(value.getPlayerTime());
         if (value.getPlayerWeather() != null) {
             out.name("player-weather").value(value.getPlayerWeather());
@@ -125,6 +142,7 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         List<HomeDTO> homeDTOS = new ArrayList<>();
         List<HomeShareDTO> homeShareDTOS = new ArrayList<>();
         List<IgnoreDTO> ignoredPlayers = new ArrayList<>();
+        List<MailMessageDTO> mailMessages = new ArrayList<>();
         long playerTime = 0;
         String playerWeather = null;
         SafeLocation lastLocation = null;
@@ -209,6 +227,35 @@ public class UserTypeAdapter extends TypeAdapter<User> {
                     }
                     in.endArray();
                 }
+                case "mail-messages" -> {
+                    in.beginArray();
+                    while (in.hasNext()) {
+                        in.beginObject();
+
+                        int mailId = 0;
+                        UUID senderId = null;
+                        String senderName = "";
+                        String content = "";
+                        boolean isRead = false;
+                        long createdAt = 0;
+
+                        while (in.hasNext()) {
+                            switch (in.nextName()) {
+                                case "id" -> mailId = in.nextInt();
+                                case "sender-id" -> senderId = UUID.fromString(in.nextString());
+                                case "sender-name" -> senderName = in.nextString();
+                                case "content" -> content = in.nextString();
+                                case "is-read" -> isRead = in.nextBoolean();
+                                case "created-at" -> createdAt = in.nextLong();
+                                default -> in.skipValue();
+                            }
+                        }
+                        in.endObject();
+
+                        mailMessages.add(new MailMessageDTO(mailId, uniqueId, senderId, senderName, content, isRead, new Date(createdAt)));
+                    }
+                    in.endArray();
+                }
                 case "player-time" -> playerTime = in.nextLong();
                 case "player-weather" -> playerWeather = in.nextString();
 
@@ -230,6 +277,7 @@ public class UserTypeAdapter extends TypeAdapter<User> {
         user.setHomes(homeDTOS);
         user.setHomeShares(homeShareDTOS);
         user.setIgnoredPlayers(ignoredPlayers);
+        user.setMailMessages(mailMessages);
         user.loadPlayerTimeWeather(playerTime, playerWeather);
         user.setPowerTools(powerTools);
         balances.forEach(user::setBalance);

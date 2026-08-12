@@ -8,6 +8,7 @@ import fr.maxlego08.essentials.api.dto.DiscordCodeDTO;
 import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.EconomyTransactionDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
+import fr.maxlego08.essentials.api.dto.MailMessageDTO;
 import fr.maxlego08.essentials.api.dto.PlayerSlotDTO;
 import fr.maxlego08.essentials.api.dto.PublicHomeDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
@@ -21,6 +22,7 @@ import fr.maxlego08.essentials.api.dto.VaultItemDTO;
 import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.steps.Step;
 import fr.maxlego08.essentials.api.user.Option;
@@ -459,6 +461,36 @@ public interface IStorage {
      * @param id the ID of the mailbox item
      */
     void removeMailBoxItem(int id);
+
+    /**
+     * Adds a text message to a user's mailbox. The user does not have to be online.
+     *
+     * @param mailMessage the mail message
+     */
+    void addMailMessage(MailMessage mailMessage);
+
+    /**
+     * Marks every text message of a user as read.
+     *
+     * @param uniqueId the UUID of the user
+     */
+    void markMailMessagesAsRead(UUID uniqueId);
+
+    /**
+     * Deletes every text message of a user.
+     *
+     * @param uniqueId the UUID of the user
+     */
+    void clearMailMessages(UUID uniqueId);
+
+    /**
+     * Retrieves the text messages of a user, even if the user is offline.
+     * This method is blocking, it must be called asynchronously.
+     *
+     * @param uniqueId the UUID of the user
+     * @return a list of mail messages
+     */
+    List<MailMessageDTO> getMailMessages(UUID uniqueId);
 
     /**
      * Retrieves economy rankings.

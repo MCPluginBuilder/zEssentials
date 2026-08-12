@@ -11,6 +11,7 @@ import fr.maxlego08.essentials.api.event.events.user.UserEconomyUpdateEvent;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.kit.Kit;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.storage.IStorage;
@@ -53,6 +54,7 @@ public class ZUser extends ZUtils implements User {
     private final Map<String, Set<UUID>> homeShares = new HashMap<>();
     private final List<UUID> ignoredPlayers = new ArrayList<>();
     private final List<MailBoxItem> mailBoxItems = new ArrayList<>();
+    private final List<MailMessage> mailMessages = new ArrayList<>();
     private final DynamicCooldown dynamicCooldown = new DynamicCooldown();
     private final Selection selection = new ZSelection();
     private WorldEditTask worldEditTask;
@@ -980,6 +982,28 @@ public class ZUser extends ZUtils implements User {
     public void addMailBoxItem(MailBoxItem mailBoxItem) {
         this.mailBoxItems.add(mailBoxItem);
         this.getStorage().addMailBoxItem(mailBoxItem);
+    }
+
+    @Override
+    public List<MailMessage> getMailMessages() {
+        return this.mailMessages;
+    }
+
+    @Override
+    public void setMailMessages(List<MailMessageDTO> mailMessages) {
+        this.mailMessages.clear();
+        this.mailMessages.addAll(mailMessages.stream().map(MailMessage::new).toList());
+    }
+
+    @Override
+    public void addMailMessage(MailMessage mailMessage) {
+        this.mailMessages.add(mailMessage);
+        this.getStorage().addMailMessage(mailMessage);
+    }
+
+    @Override
+    public long countUnreadMailMessages() {
+        return this.mailMessages.stream().filter(mailMessage -> !mailMessage.isRead()).count();
     }
 
     @Override

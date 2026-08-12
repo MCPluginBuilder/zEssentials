@@ -10,6 +10,7 @@ import fr.maxlego08.essentials.api.dto.EconomyDTO;
 import fr.maxlego08.essentials.api.dto.EconomyTransactionDTO;
 import fr.maxlego08.essentials.api.dto.HomeDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
+import fr.maxlego08.essentials.api.dto.MailMessageDTO;
 import fr.maxlego08.essentials.api.dto.PlayerSlotDTO;
 import fr.maxlego08.essentials.api.dto.PublicHomeDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
@@ -23,6 +24,7 @@ import fr.maxlego08.essentials.api.dto.VaultItemDTO;
 import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.steps.Step;
 import fr.maxlego08.essentials.api.storage.IStorage;
@@ -447,6 +449,69 @@ public class JsonStorage extends StorageHelper implements IStorage {
     @Override
     public void removeMailBoxItem(int id) {
         throw new NotImplementedException("removeMailBoxItem is not implemented, use MYSQL storage");
+    }
+
+    @Override
+    public void addMailMessage(MailMessage mailMessage) {
+        UUID uniqueId = mailMessage.getUniqueId();
+
+        User user = this.users.get(uniqueId);
+        if (user != null) {
+            // The message was already added to the online user, only the file has to be written
+            this.saveFileAsync(uniqueId);
+            return;
+        }
+
+        // The receiver is offline, the file is loaded, updated and saved without caching the user
+        async(() -> updateOfflineUser(uniqueId, offlineUser -> offlineUser.addMailMessage(mailMessage)));
+    }
+
+    @Override
+    public void markMailMessagesAsRead(UUID uniqueId) {
+        if (this.users.containsKey(uniqueId)) {
+            this.saveFileAsync(uniqueId);
+            return;
+        }
+        async(() -> updateOfflineUser(uniqueId, offlineUser -> offlineUser.getMailMessages().forEach(mailMessage -> mailMessage.setRead(true))));
+    }
+
+    @Override
+    public void clearMailMessages(UUID uniqueId) {
+        if (this.users.containsKey(uniqueId)) {
+            this.saveFileAsync(uniqueId);
+            return;
+        }
+        async(() -> updateOfflineUser(uniqueId, offlineUser -> offlineUser.getMailMessages().clear()));
+    }
+
+    @Override
+    public List<MailMessageDTO> getMailMessages(UUID uniqueId) {
+
+        User user = this.users.get(uniqueId);
+        if (user == null) {
+            user = this.plugin.getPersist().load(User.class, getUserFile(uniqueId));
+            if (user == null) return new ArrayList<>();
+        }
+
+        return user.getMailMessages().stream().map(mailMessage -> new MailMessageDTO(mailMessage.getId(), mailMessage.getUniqueId(), mailMessage.getSenderId(), mailMessage.getSenderName(), mailMessage.getContent(), mailMessage.isRead(), mailMessage.getCreatedAt())).toList();
+    }
+
+    /**
+     * Loads the file of an offline user, applies the given change and saves the file back.
+     * The user is never put in the online users cache.
+     *
+     * @param uniqueId the UUID of the offline user
+     * @param consumer the change to apply
+     */
+    private void updateOfflineUser(UUID uniqueId, Consumer<User> consumer) {
+        File file = getUserFile(uniqueId);
+        Persist persist = this.plugin.getPersist();
+
+        User offlineUser = persist.load(User.class, file);
+        if (offlineUser == null) return; // The player never joined the server
+
+        consumer.accept(offlineUser);
+        persist.save(offlineUser, file);
     }
 
     @Override

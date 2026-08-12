@@ -441,6 +441,10 @@ description-mail-give: 给玩家的邮箱赠送一个物品
 description-mail-give-hand: 将你手中的物品发送到玩家的邮箱
 description-mail-giveall: 给所有玩家的邮箱赠送物品
 description-mail-giveall-hand: 将你手中的物品发送到所有在线玩家的邮箱
+description-mail-send: "向玩家发送邮件，无论其是否在线"
+description-mail-read: "阅读你收到的邮件"
+description-mail-send-all: "向所有在线玩家发送邮件"
+description-mail-clear-messages: "删除玩家的邮件"
 description-voteparty-information: 显示投票派对
 description-voteparty-set: 设置投票派对所需的票数
 description-voteparty-add: 向投票派对添加票数
@@ -1062,6 +1066,33 @@ description-vault-show: 显示玩家的保管箱
 description-worldedit-cancel: 取消当前选择
 experience-taken: "<success>你刚刚从 <white>%player%<success> 处扣除了 <white>%amount% %type%<success>。"
 mailbox-clear: "<success>你刚刚清空了 &f%player%<success> 的信箱。"
+
+mailbox-message-send: "<success>你的邮件已发送给 &f%player%<success>。"
+mailbox-message-receive: "<primary>&f%player% <primary>给你发送了一封邮件 &8(&f/mail read&8)"
+mailbox-message-send-all: "<success>你的邮件已发送给 &f%amount% <success>名玩家。"
+mailbox-message-notify: "<primary>你有 &f%amount% <primary>封未读邮件，请使用 <click:run_command:'/mail read'><hover:show_text:'&f点击阅读你的邮件'>&f/mail read</hover></click><primary>。"
+mailbox-message-empty: "<error>你没有任何邮件。"
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>你的邮件 <secondary>(&f%amount%<secondary>)"
+    - ""
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>使用 <click:run_command:'/mail clearmessages'><hover:show_text:'&f点击删除你的邮件'>&f/mail clearmessages</hover></click><secondary> 来删除它们。"
+    - ""
+mailbox-message-clear: "<success>你刚刚删除了 &f%player%<success> 的邮件。"
+mailbox-message-self: "<error>你不能给自己发送邮件。"
+mailbox-message-mute: "<error>你被禁言时无法发送邮件。"
+mailbox-message-ignore: "<error>&f%player% <error>不想收到你的邮件。"
+mailbox-message-full: "<error>&f%player% <error>的邮箱已满。"
+mailbox-message-too-long: "<error>你的邮件不能超过 &f%max% <error>个字符。"
 step-already-exist: "<error>步骤 &f%step% <error>已经开始。"
 step-doesnt-exist: "<error>步骤 &f%step% <error>不存在。"
 step-doesnt-started: "<error>步骤 &f%step% <error>尚未开始。"

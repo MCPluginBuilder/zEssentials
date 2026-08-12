@@ -8,6 +8,7 @@ import fr.maxlego08.essentials.api.dto.HomeDTO;
 import fr.maxlego08.essentials.api.dto.HomeShareDTO;
 import fr.maxlego08.essentials.api.dto.IgnoreDTO;
 import fr.maxlego08.essentials.api.dto.MailBoxDTO;
+import fr.maxlego08.essentials.api.dto.MailMessageDTO;
 import fr.maxlego08.essentials.api.dto.OptionDTO;
 import fr.maxlego08.essentials.api.dto.SanctionDTO;
 import fr.maxlego08.essentials.api.dto.UserDTO;
@@ -16,6 +17,7 @@ import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.kit.Kit;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.messages.Message;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.utils.DynamicCooldown;
@@ -897,6 +899,34 @@ public interface User {
      * @param mailBoxItem the mailbox item to add
      */
     void addMailBoxItem(MailBoxItem mailBoxItem);
+
+    /**
+     * Retrieves the text messages sent to this user with /mail send.
+     *
+     * @return the list of mail messages
+     */
+    List<MailMessage> getMailMessages();
+
+    /**
+     * Sets the text messages of this user.
+     *
+     * @param mailMessages the mail messages to set
+     */
+    void setMailMessages(List<MailMessageDTO> mailMessages);
+
+    /**
+     * Adds a text message to this user's mailbox.
+     *
+     * @param mailMessage the mail message to add
+     */
+    void addMailMessage(MailMessage mailMessage);
+
+    /**
+     * Counts the text messages this user has not read yet.
+     *
+     * @return the number of unread messages
+     */
+    long countUnreadMailMessages();
 
     /**
      * Retrieves the dynamic cooldown associated with the user.

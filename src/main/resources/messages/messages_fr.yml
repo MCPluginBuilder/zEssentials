@@ -441,6 +441,10 @@ description-mail-give: "Donner un objet à la boîte aux lettres du joueur"
 description-mail-give-hand: "Envoyer l'objet dans votre main dans la boîte aux lettres d'un joueur"
 description-mail-giveall: "Donner des objets aux boîtes aux lettres des joueurs"
 description-mail-giveall-hand: "Envoyer l'objet dans votre main dans la boîte aux lettres des joueurs connectés"
+description-mail-send: "Envoyer un courrier à un joueur, connecté ou non"
+description-mail-read: "Lire les courriers que vous avez reçus"
+description-mail-send-all: "Envoyer un courrier à tous les joueurs connectés"
+description-mail-clear-messages: "Supprimer les courriers d'un joueur"
 description-mail-clear: "Removes items from the player’s mailbox"
 description-voteparty-information: "Afficher le vote party"
 description-voteparty-set: "Définir le nombre de votes dans le vote party"
@@ -820,6 +824,33 @@ mailbox-give-all: "<success>Vous venez de donner &n&fx%amount% %item%&r <success
 mailbox-give-hand: "<success>Vous venez d'envoyer l'objet dans votre main dans la boîte aux lettres de &f%player%<success> (&fx%amount% %item%<success>)."
 mailbox-give-all-hand: "<success>Vous venez d'envoyer l'objet dans votre main (&fx%amount% %item%<success>) dans la boîte aux lettres de tous les joueurs connectés."
 mailbox-clear: "<success>Vous venez d’effacer la boîte aux lettres de &f%player%<success>."
+
+mailbox-message-send: "<success>Votre courrier a été envoyé à &f%player%<success>."
+mailbox-message-receive: "<primary>&f%player% <primary>vous a envoyé un courrier &8(&f/mail read&8)"
+mailbox-message-send-all: "<success>Votre courrier a été envoyé à &f%amount% <success>joueur(s)."
+mailbox-message-notify: "<primary>Vous avez &f%amount% <primary>courrier(s) non lu(s), utilisez <click:run_command:'/mail read'><hover:show_text:'&fCliquez pour lire vos courriers'>&f/mail read</hover></click><primary>."
+mailbox-message-empty: "<error>Vous n’avez aucun courrier."
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>Vos courriers <secondary>(&f%amount%<secondary>)"
+    - ""
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>Utilisez <click:run_command:'/mail clearmessages'><hover:show_text:'&fCliquez pour supprimer vos courriers'>&f/mail clearmessages</hover></click><secondary> pour les supprimer."
+    - ""
+mailbox-message-clear: "<success>Vous venez de supprimer les courriers de &f%player%<success>."
+mailbox-message-self: "<error>Vous ne pouvez pas vous envoyer un courrier à vous-même."
+mailbox-message-mute: "<error>Vous ne pouvez pas envoyer de courrier lorsque vous êtes muet."
+mailbox-message-ignore: "<error>&f%player% <error>ne souhaite pas recevoir vos courriers."
+mailbox-message-full: "<error>La boîte aux lettres de &f%player% <error>est pleine."
+mailbox-message-too-long: "<error>Votre courrier ne peut pas dépasser &f%max% <error>caractères."
 
 hologram-create-error: "<error>Le hologramme &f%name% <error>existe déjà."
 hologram-create:

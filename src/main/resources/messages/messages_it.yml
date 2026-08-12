@@ -396,6 +396,10 @@ description-mail-give: "Da un oggetto nella mailbox del giocatore"
 description-mail-give-hand: "Invia l'oggetto nella tua mano alla mailbox di un giocatore"
 description-mail-giveall: "Dai un oggetto nella mailbox di tutti i giocatori"
 description-mail-giveall-hand: "Invia l'oggetto nella tua mano alle mailbox dei giocatori online"
+description-mail-send: "Invia un messaggio a un giocatore, online o no"
+description-mail-read: "Leggi i messaggi che hai ricevuto"
+description-mail-send-all: "Invia un messaggio a tutti i giocatori online"
+description-mail-clear-messages: "Elimina i messaggi di un giocatore"
 description-voteparty-information: "Mostra il vote party"
 description-voteparty-set: "Imposta il numero di voti nel vote party"
 description-voteparty-add: "Aggiungi voti al vote party"
@@ -1001,6 +1005,33 @@ experience-setted: "<success>Hai appena impostato <white>%amount% %type% <succes
 experience-taken: "<success>Hai appena tolto <white>%amount% %type% <success>a <white>%player%<success>."
 expired: "Scaduto"
 mailbox-clear: "<success>Hai appena svuotato la cassetta della posta di &f%player%<success>."
+
+mailbox-message-send: "<success>Il tuo messaggio è stato inviato a &f%player%<success>."
+mailbox-message-receive: "<primary>&f%player% <primary>ti ha inviato un messaggio &8(&f/mail read&8)"
+mailbox-message-send-all: "<success>Il tuo messaggio è stato inviato a &f%amount% <success>giocatore/i."
+mailbox-message-notify: "<primary>Hai &f%amount% <primary>messaggio/i non letto/i, usa <click:run_command:'/mail read'><hover:show_text:'&fClicca per leggere i tuoi messaggi'>&f/mail read</hover></click><primary>."
+mailbox-message-empty: "<error>Non hai nessun messaggio."
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>I tuoi messaggi <secondary>(&f%amount%<secondary>)"
+    - ""
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>Usa <click:run_command:'/mail clearmessages'><hover:show_text:'&fClicca per eliminare i tuoi messaggi'>&f/mail clearmessages</hover></click><secondary> per eliminarli."
+    - ""
+mailbox-message-clear: "<success>Hai appena eliminato i messaggi di &f%player%<success>."
+mailbox-message-self: "<error>Non puoi inviare un messaggio a te stesso."
+mailbox-message-mute: "<error>Non puoi inviare un messaggio mentre sei mutato."
+mailbox-message-ignore: "<error>&f%player% <error>non vuole ricevere i tuoi messaggi."
+mailbox-message-full: "<error>La cassetta della posta di &f%player% <error>è piena."
+mailbox-message-too-long: "<error>Il tuo messaggio non può superare i &f%max% <error>caratteri."
 random-word-clear: "<success>La parola casuale è stata cancellata."
 step-already-exist: "<error>Lo step &f%step% <error>è già iniziato."
 step-doesnt-exist: "<error>Lo step &f%step% <error>non esiste."

@@ -418,6 +418,10 @@ description-mail-give: "Einem Spieler einen Gegenstand ins Postfach legen"
 description-mail-give-hand: "Den Gegenstand in deiner Hand in das Postfach eines Spielers senden"
 description-mail-giveall: "Gegenstände in die Postfächer der Spieler legen"
 description-mail-giveall-hand: "Den Gegenstand in deiner Hand in die Postfächer der Spieler senden"
+description-mail-send: "Einem Spieler eine Nachricht senden, auch wenn er offline ist"
+description-mail-read: "Die erhaltenen Nachrichten lesen"
+description-mail-send-all: "Allen verbundenen Spielern eine Nachricht senden"
+description-mail-clear-messages: "Die Nachrichten eines Spielers löschen"
 description-voteparty-information: "Stimmenparty anzeigen"
 description-voteparty-set: "Anzahl der Stimmen in der Stimmenparty festlegen"
 description-voteparty-add: "Zur Stimmenparty hinzufügen"
@@ -1038,6 +1042,33 @@ experience-queried: "<success><white>%player% <success>hat <white>%amount% <succ
 experience-setted: "<success>Du hast <white>%amount% %type% <success>für <white>%player%<success> gesetzt."
 experience-taken: "<success>Du hast <white>%amount% %type% <success>von <white>%player%<success> entfernt."
 mailbox-clear: "<success>Du hast das Postfach von &f%player%<success> geleert."
+
+mailbox-message-send: "<success>Deine Nachricht wurde an &f%player%<success> gesendet."
+mailbox-message-receive: "<primary>&f%player% <primary>hat dir eine Nachricht gesendet &8(&f/mail read&8)"
+mailbox-message-send-all: "<success>Deine Nachricht wurde an &f%amount% <success>Spieler gesendet."
+mailbox-message-notify: "<primary>Du hast &f%amount% <primary>ungelesene Nachricht(en), benutze <click:run_command:'/mail read'><hover:show_text:'&fKlicke, um deine Nachrichten zu lesen'>&f/mail read</hover></click><primary>."
+mailbox-message-empty: "<error>Du hast keine Nachricht."
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>Deine Nachrichten <secondary>(&f%amount%<secondary>)"
+    - ""
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>Benutze <click:run_command:'/mail clearmessages'><hover:show_text:'&fKlicke, um deine Nachrichten zu löschen'>&f/mail clearmessages</hover></click><secondary>, um sie zu löschen."
+    - ""
+mailbox-message-clear: "<success>Du hast die Nachrichten von &f%player%<success> gelöscht."
+mailbox-message-self: "<error>Du kannst dir selbst keine Nachricht senden."
+mailbox-message-mute: "<error>Du kannst keine Nachricht senden, solange du stummgeschaltet bist."
+mailbox-message-ignore: "<error>&f%player% <error>möchte deine Nachrichten nicht erhalten."
+mailbox-message-full: "<error>Das Postfach von &f%player% <error>ist voll."
+mailbox-message-too-long: "<error>Deine Nachricht darf nicht länger als &f%max% <error>Zeichen sein."
 random-word-clear: "<success>Das Zufallswort wurde gelöscht."
 step-already-exist: "<error>Schritt &f%step% <error>hat bereits begonnen."
 step-doesnt-exist: "<error>Schritt &f%step% <error>existiert nicht."

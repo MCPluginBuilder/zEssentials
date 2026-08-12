@@ -452,6 +452,10 @@ description-mail-give: "Give an item to player's mailbox"
 description-mail-give-hand: "Send the item in your hand to a player's mailbox"
 description-mail-giveall: "Give items to players' mailboxes"
 description-mail-giveall-hand: "Send the item in your hand to players' mailboxes"
+description-mail-send: "Send a mail to a player, online or not"
+description-mail-read: "Read the mails you received"
+description-mail-send-all: "Send a mail to every online player"
+description-mail-clear-messages: "Delete the mails of a player"
 description-mail-clear: "Removes items from the player’s mailbox"
 description-voteparty-information: "Show the vote party"
 description-voteparty-set: "Set the number of votes in the vote party"
@@ -859,6 +863,70 @@ mailbox-give-all: "<success>You just gave &n&fx%amount% %item%&r <success>to onl
 mailbox-give-hand: "<success>You just sent the item in your hand to &f%player%<success>'s mailbox (&fx%amount% %item%<success>)."
 mailbox-give-all-hand: "<success>You just sent the item in your hand (&fx%amount% %item%<success>) to every online player's mailbox."
 mailbox-clear: "<success>You have just cleared the mailbox of &f%player%<success>."
+
+# Available placeholders:
+# %player% - Receiver name
+# %message% - The mail content
+mailbox-message-send: "<success>Your mail was sent to &f%player%<success>."
+
+# Available placeholders:
+# %player% - Sender name
+# %message% - The mail content
+mailbox-message-receive: "<primary>&f%player% <primary>sent you a mail &8(&f/mail read&8)"
+
+# Available placeholders:
+# %amount% - Amount of players who received the mail
+# %message% - The mail content
+mailbox-message-send-all: "<success>Your mail was sent to &f%amount% <success>player(s)."
+
+# Available placeholders:
+# %amount% - Amount of unread mails
+mailbox-message-notify: "<primary>You have &f%amount% <primary>unread mail(s), use <click:run_command:'/mail read'><hover:show_text:'&fClick to read your mails'>&f/mail read</hover></click><primary>."
+
+mailbox-message-empty: "<error>You don't have any mail."
+
+# Available placeholders:
+# %amount% - Amount of mails
+mailbox-message-header:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<primary>Your mails <secondary>(&f%amount%<secondary>)"
+    - ""
+
+# Available placeholders:
+# %player% - Sender name
+# %date% - Date the mail was sent
+# %message% - The mail content
+mailbox-message-line:
+  type: WITHOUT_PREFIX
+  message: "<secondary>&8[&f%date%&8] <primary>%player%<secondary>: &f%message%"
+
+mailbox-message-footer:
+  type: WITHOUT_PREFIX
+  messages:
+    - ""
+    - "<secondary>Use <click:run_command:'/mail clearmessages'><hover:show_text:'&fClick to delete your mails'>&f/mail clearmessages</hover></click><secondary> to delete them."
+    - ""
+
+# Available placeholders:
+# %player% - Player name
+mailbox-message-clear: "<success>You have just deleted the mails of &f%player%<success>."
+
+mailbox-message-self: "<error>You cannot send a mail to yourself."
+mailbox-message-mute: "<error>You cannot send a mail while you are muted."
+
+# Available placeholders:
+# %player% - Player name
+mailbox-message-ignore: "<error>&f%player% <error>does not want to receive your mails."
+
+# Available placeholders:
+# %player% - Player name
+mailbox-message-full: "<error>The mailbox of &f%player% <error>is full."
+
+# Available placeholders:
+# %max% - Maximum amount of characters
+mailbox-message-too-long: "<error>Your mail cannot be longer than &f%max% <error>characters."
 
 
 hologram-create-error: "<error>Hologram &f%name% <error>already exists."

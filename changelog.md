@@ -6,6 +6,13 @@
 
 # Unreleased
 
+- Added **text mails** to the mailbox module, to send a message to a player who is not connected (`modules/mailbox/config.yml`):
+    - `/mail send <player> <message>` works with an online or offline player, `/mail read` displays the received mails and marks them as read, `/mail clearmessages [player]` deletes them and `/mail sendall <message>` sends a mail to every online player
+    - A player who connects with unread mails is notified with a clickable message (`message-notify-on-join`, `message-notify-delay`)
+    - Configurable limits: `message-max-amount` per player, `message-max-length`, `message-cooldown` between two mails (bypassed with `essentials.bypass.cooldown`) and `message-date-format`
+    - A muted player cannot send a mail, and a player who used `/ignore` no longer receives the mails of the ignored player
+    - Persistence via a new `user_mail_messages` table (SQLite and MySQL) and inside the user file for the JSON storage, unlike the item mailbox which stays MySQL only
+    - New permissions `essentials.mail.send`, `essentials.mail.read`, `essentials.mail.send.all` and `essentials.mail.clear.messages`
 - Fixed the build of the `NMS:V26_2` module: since Minecraft 26.1 the built in entity types are declared in `EntityTypes` and no longer in `EntityType`, so `EntityType.BLOCK_DISPLAY`, `ITEM_DISPLAY` and `TEXT_DISPLAY` could not be resolved anymore
 - Fixed `shadowJar` failing with `Unsupported class file major version 69` — the `NMS:V26_2` module still builds with a Java 25 toolchain (needed to read the 26.2 dev bundle) but now emits Java 21 bytecode, which the ASM version bundled with the shadow plugin can remap
 - Added a new **custom commands** module (`modules/customcommands/config.yml`) to create your own commands without any other plugin, for `/discord`, `/map`, `/vote`, `/store`, `/updates`...

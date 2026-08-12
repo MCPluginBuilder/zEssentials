@@ -7,6 +7,7 @@ import fr.maxlego08.essentials.api.economy.Economy;
 import fr.maxlego08.essentials.api.economy.PendingEconomyUpdate;
 import fr.maxlego08.essentials.api.home.Home;
 import fr.maxlego08.essentials.api.mailbox.MailBoxItem;
+import fr.maxlego08.essentials.api.mailbox.MailMessage;
 import fr.maxlego08.essentials.api.sanction.Sanction;
 import fr.maxlego08.essentials.api.sanction.SanctionType;
 import fr.maxlego08.essentials.api.steps.Step;
@@ -111,6 +112,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
 
         MigrationManager.registerMigration(new DropStepMigration());
         MigrationManager.registerMigration(new CreateUserStepV2Migration());
+        MigrationManager.registerMigration(new CreateUserMailMessageMigration());
 
         // Repositories
         this.repositories = new Repositories(plugin, this.connection);
@@ -128,6 +130,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
         this.repositories.register(UserPlayTimeRepository.class);
         this.repositories.register(UserPowerToolsRepository.class);
         this.repositories.register(UserMailBoxRepository.class);
+        this.repositories.register(UserMailMessageRepository.class);
         this.repositories.register(ServerStorageRepository.class);
         this.repositories.register(VoteSiteRepository.class);
         this.repositories.register(PlayerSlotRepository.class);
@@ -264,6 +267,7 @@ public class SqlStorage extends StorageHelper implements IStorage {
                 user.setIgnoredPlayers(with(UserIgnoreRepository.class).select(uniqueId));
                 user.setPowerTools(with(UserPowerToolsRepository.class).select(uniqueId).stream().collect(Collectors.toMap(PowerToolsDTO::material, PowerToolsDTO::command, (a, b) -> b, LinkedHashMap::new)));
                 user.setMailBoxItems(with(UserMailBoxRepository.class).select(uniqueId));
+                user.setMailMessages(with(UserMailMessageRepository.class).select(uniqueId));
                 user.setVoteSites(with(VoteSiteRepository.class).select(uniqueId));
                 with(LinkAccountRepository.class).select(uniqueId).ifPresent(user::setDiscordAccount);
             }
@@ -689,6 +693,26 @@ public class SqlStorage extends StorageHelper implements IStorage {
     @Override
     public List<MailBoxDTO> getMailBox(UUID uuid) {
         return with(UserMailBoxRepository.class).select(uuid);
+    }
+
+    @Override
+    public void addMailMessage(MailMessage mailMessage) {
+        async(mailMessage.getUniqueId(), () -> with(UserMailMessageRepository.class).insert(mailMessage));
+    }
+
+    @Override
+    public void markMailMessagesAsRead(UUID uniqueId) {
+        async(() -> with(UserMailMessageRepository.class).markAsRead(uniqueId));
+    }
+
+    @Override
+    public void clearMailMessages(UUID uniqueId) {
+        async(() -> with(UserMailMessageRepository.class).clear(uniqueId));
+    }
+
+    @Override
+    public List<MailMessageDTO> getMailMessages(UUID uniqueId) {
+        return with(UserMailMessageRepository.class).select(uniqueId);
     }
 
     @Override
