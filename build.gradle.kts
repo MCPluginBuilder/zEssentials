@@ -30,6 +30,10 @@ allprojects {
         maven(url = "https://repo.papermc.io/repository/maven-public/")
         maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/")
         maven(url = "https://repo.tcoded.com/releases")
+        maven {
+            name = "faststatsReleases"
+            url = uri("https://repo.faststats.dev/releases")
+        }
     }
 
     configurations.all {
@@ -82,6 +86,10 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT")
 
+    implementation("dev.faststats.metrics:bukkit:0.29.4") {
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+
     api(project(":API"))
 
     // Since Minecraft 1.20.5 Paper ships a Mojang-mapped runtime, and since 26.1 Spigot
@@ -111,6 +119,7 @@ tasks {
         relocate("com.tcoded.folialib", "fr.maxlego08.essentials.libs.folialib")
         relocate("fr.maxlego08.sarah", "fr.maxlego08.essentials.libs.sarah")
         relocate("fr.mrmicky.fastboard", "fr.maxlego08.essentials.libs.fastboard")
+        relocate("dev.faststats", "fr.maxlego08.essentials.libs.faststats")
 
         manifest {
             attributes["paperweight-mappings-namespace"] = "mojang"

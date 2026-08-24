@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.FoliaImplementation;
 import com.tcoded.folialib.impl.PlatformScheduler;
+import dev.faststats.bukkit.BukkitContext;
 import fr.maxlego08.essentials.api.Configuration;
 import fr.maxlego08.essentials.api.ConfigurationFile;
 import fr.maxlego08.essentials.api.EssentialsPlugin;
@@ -41,11 +42,7 @@ import fr.maxlego08.essentials.api.vault.VaultManager;
 import fr.maxlego08.essentials.api.vote.VoteManager;
 import fr.maxlego08.essentials.api.waypoint.WayPointHelper;
 import fr.maxlego08.essentials.api.worldedit.WorldeditManager;
-import fr.maxlego08.essentials.buttons.ButtonHomes;
-import fr.maxlego08.essentials.buttons.ButtonPublicHomes;
-import fr.maxlego08.essentials.buttons.ButtonPayConfirm;
-import fr.maxlego08.essentials.buttons.ButtonTeleportationConfirm;
-import fr.maxlego08.essentials.buttons.ButtonTeleportationConfirmHere;
+import fr.maxlego08.essentials.buttons.*;
 import fr.maxlego08.essentials.buttons.kit.ButtonKitPreview;
 import fr.maxlego08.essentials.buttons.mail.ButtonMailBox;
 import fr.maxlego08.essentials.buttons.mail.ButtonMailBoxAdmin;
@@ -61,22 +58,10 @@ import fr.maxlego08.essentials.commands.commands.essentials.CommandEssentials;
 import fr.maxlego08.essentials.enchantments.ZEnchantments;
 import fr.maxlego08.essentials.listener.InvseeListener;
 import fr.maxlego08.essentials.listener.PlayerListener;
-import fr.maxlego08.essentials.loader.ButtonKitCooldownLoader;
-import fr.maxlego08.essentials.loader.ButtonKitGetLoader;
-import fr.maxlego08.essentials.loader.ButtonOptionLoader;
-import fr.maxlego08.essentials.loader.ButtonSanctionLoader;
-import fr.maxlego08.essentials.loader.ButtonVaultNoPermissionLoader;
-import fr.maxlego08.essentials.loader.ButtonVaultNoPermissionAdminLoader;
-import fr.maxlego08.essentials.loader.ButtonVaultOpenLoader;
-import fr.maxlego08.essentials.loader.ButtonVaultOpenAdminLoader;
-import fr.maxlego08.essentials.loader.ButtonWarpLoader;
+import fr.maxlego08.essentials.loader.*;
 import fr.maxlego08.essentials.messages.MessageLoader;
 import fr.maxlego08.essentials.module.ZModuleManager;
-import fr.maxlego08.essentials.module.modules.HomeModule;
-import fr.maxlego08.essentials.module.modules.MailBoxModule;
-import fr.maxlego08.essentials.module.modules.SanctionModule;
-import fr.maxlego08.essentials.module.modules.StepModule;
-import fr.maxlego08.essentials.module.modules.VoteModule;
+import fr.maxlego08.essentials.module.modules.*;
 import fr.maxlego08.essentials.module.modules.afk.AFKModule;
 import fr.maxlego08.essentials.module.modules.chat.interactive.InteractiveChatHelper;
 import fr.maxlego08.essentials.module.modules.chat.interactive.InteractiveChatPaperListener;
@@ -97,30 +82,10 @@ import fr.maxlego08.essentials.storage.ZStorageManager;
 import fr.maxlego08.essentials.storage.adapter.UserTypeAdapter;
 import fr.maxlego08.essentials.task.FlyTask;
 import fr.maxlego08.essentials.user.ZUser;
-import fr.maxlego08.essentials.user.placeholders.ArmorPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.EconomyBaltopPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.NearPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.PlayerListPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.PlayerPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.RandomWordPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.ReplacePlaceholders;
-import fr.maxlego08.essentials.user.placeholders.ServerPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.UserHomePlaceholders;
-import fr.maxlego08.essentials.user.placeholders.UserItems1_21Placeholders;
-import fr.maxlego08.essentials.user.placeholders.UserItemsPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.UserKitPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.UserPlaceholders;
-import fr.maxlego08.essentials.user.placeholders.UserPlayTimePlaceholders;
-import fr.maxlego08.essentials.user.placeholders.VotePlaceholders;
-import fr.maxlego08.essentials.user.placeholders.WorldEditPlaceholders;
+import fr.maxlego08.essentials.user.placeholders.*;
 import fr.maxlego08.essentials.zutils.Metrics;
 import fr.maxlego08.essentials.zutils.ZPlugin;
-import fr.maxlego08.essentials.zutils.utils.ComponentMessageHelper;
-import fr.maxlego08.essentials.zutils.utils.DefaultBlockTracker;
-import fr.maxlego08.essentials.zutils.utils.NmsVersionUtils;
-import fr.maxlego08.essentials.zutils.utils.PlaceholderUtils;
-import fr.maxlego08.essentials.zutils.utils.VersionChecker;
-import fr.maxlego08.essentials.zutils.utils.ZServerStorage;
+import fr.maxlego08.essentials.zutils.utils.*;
 import fr.maxlego08.essentials.zutils.utils.documentation.CommandMarkdownGenerator;
 import fr.maxlego08.essentials.zutils.utils.documentation.PermissionInfo;
 import fr.maxlego08.essentials.zutils.utils.documentation.PermissionMarkdownGenerator;
@@ -142,24 +107,11 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.ServicePriority;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin {
@@ -168,6 +120,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
     private final List<Material> materials = Arrays.stream(Material.values()).filter(e -> !e.name().startsWith("LEGACY_")).toList();
     private final Enchantments enchantments = new ZEnchantments();
     private final List<PermissionChecker> permissionCheckers = new ArrayList<>();
+    private final BukkitContext context = new BukkitContext.Factory(this, "28e08a99fe06fe15372d51ee3919757f").metrics(dev.faststats.Metrics.Factory::create).create();
     private volatile Map<String, Warp> warpsByName = Collections.emptyMap();
     private EssentialsUtils essentialsUtils;
     private ServerStorage serverStorage = new ZServerStorage(this);
@@ -276,6 +229,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
 
         new Metrics(this, 21703);
         new VersionChecker(this, 325);
+        context.ready();
 
         // Load ProtocolLib
         /*if (this.moduleManager.getModuleConfiguration("chat").getBoolean("command-placeholder.enable-replace-all-message") && getServer().getPluginManager().isPluginEnabled("ProtocolLib") && this.isPaperVersion()) {
@@ -327,6 +281,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
 
         this.essentialsServer.onDisable();
 
+        context.shutdown();
     }
 
     private void registerButtons() {
