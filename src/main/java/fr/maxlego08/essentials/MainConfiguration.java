@@ -58,6 +58,7 @@ public class MainConfiguration extends YamlLoader implements Configuration {
     private boolean enableCooldownBypass;
     private boolean enableCommandLog;
     private boolean tempFlyTask;
+    private boolean enableFirstJoinTeleport;
     private int trashSize;
     private String globalDateFormat;
     @NonLoadable
@@ -80,12 +81,12 @@ public class MainConfiguration extends YamlLoader implements Configuration {
     }
 
     @Override
-    public boolean isEnableDebug() {
+    public boolean enableDebug() {
         return this.enableDebug;
     }
 
     @Override
-    public boolean isEnableCooldownBypass() {
+    public boolean enableCooldownBypass() {
         return this.enableCooldownBypass;
     }
 
@@ -314,7 +315,7 @@ public class MainConfiguration extends YamlLoader implements Configuration {
     }
 
     @Override
-    public boolean isEnableCommandLog() {
+    public boolean enableCommandLog() {
         return this.enableCommandLog;
     }
 
@@ -349,12 +350,12 @@ public class MainConfiguration extends YamlLoader implements Configuration {
     }
 
     @Override
-    public boolean isEnableOfflinePlayersName() {
+    public boolean enableOfflinePlayersName() {
         return this.enableOfflinePlayerNames;
     }
 
     @Override
-    public boolean isEnableFlyReturn() {
+    public boolean enableFlyReturn() {
         return this.enableFlyReturn;
     }
 
@@ -391,6 +392,11 @@ public class MainConfiguration extends YamlLoader implements Configuration {
     @Override
     public List<String> getForceCommands() {
         return this.forceCommands;
+    }
+
+    @Override
+    public boolean enableFirstJoinTeleport() {
+        return this.enableFirstJoinTeleport;
     }
 
 }

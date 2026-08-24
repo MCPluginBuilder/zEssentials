@@ -27,14 +27,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -160,7 +153,7 @@ public class PlayerListener extends ZUtils implements Listener {
     public void onCommandHighest(PlayerCommandPreprocessEvent event) {
 
         Configuration configuration = this.plugin.getConfiguration();
-        if (configuration.isEnableCommandLog()) {
+        if (configuration.enableCommandLog()) {
             this.plugin.getStorageManager().getStorage().insertCommand(event.getPlayer().getUniqueId(), event.getMessage());
         }
     }
@@ -190,7 +183,7 @@ public class PlayerListener extends ZUtils implements Listener {
         User user = this.plugin.getUser(player.getUniqueId());
         if (user != null) user.startCurrentSessionPlayTime();
 
-        if (user != null && user.isFirstJoin()) {
+        if (user != null && user.isFirstJoin() && this.plugin.getConfiguration().enableFirstJoinTeleport()) {
             if (ConfigStorage.firstSpawnLocation != null && ConfigStorage.firstSpawnLocation.isValid()) {
                 this.plugin.getScheduler().teleportAsync(player, ConfigStorage.firstSpawnLocation.getLocation());
             } else if (ConfigStorage.spawnLocation != null && ConfigStorage.spawnLocation.isValid()) {
@@ -278,7 +271,8 @@ public class PlayerListener extends ZUtils implements Listener {
 
         if (user != null && user.getOption(Option.NIGHT_VISION) && event.getItem().getType() == Material.MILK_BUCKET) {
             this.plugin.getScheduler().runAtLocationLater(player.getLocation(), wrappedTask -> {
-                if (player.isOnline()) player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, -1, 1, false, false, false), true);
+                if (player.isOnline())
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, -1, 1, false, false, false), true);
             }, 2);
         }
     }
@@ -291,7 +285,8 @@ public class PlayerListener extends ZUtils implements Listener {
 
         if (user != null && user.getOption(Option.NIGHT_VISION)) {
             this.plugin.getScheduler().runAtLocationLater(player.getLocation(), wrappedTask -> {
-                if (player.isOnline()) player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, -1, 1, false, false, false), true);
+                if (player.isOnline())
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, -1, 1, false, false, false), true);
             }, 2);
         }
     }
@@ -321,7 +316,7 @@ public class PlayerListener extends ZUtils implements Listener {
             player.setAllowFlight(false);
             player.setMetadata("zessentials-fly", new FixedMetadataValue(this.plugin, true));
             message(player, Message.COMMAND_FLY_ERROR_WORLD);
-        } else if (configuration.isEnableFlyReturn() && !configuration.getDisableFlyWorld().contains(worldName) && player.hasMetadata("zessentials-fly")) {
+        } else if (configuration.enableFlyReturn() && !configuration.getDisableFlyWorld().contains(worldName) && player.hasMetadata("zessentials-fly")) {
 
             player.setAllowFlight(true);
             player.setFlying(true);

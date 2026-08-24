@@ -431,7 +431,7 @@ public abstract class VCommand extends Arguments implements EssentialsCommand {
             configuration = this.plugin.getConfiguration();
 
             // Check for cooldown
-            if (user != null && (!this.user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) || !configuration.isEnableCooldownBypass())) {
+            if (user != null && (!this.user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) || !configuration.enableCooldownBypass())) {
                 Optional<Integer> optional = configuration.getCooldown(this.sender, key);
                 if (optional.isPresent()) {
                     cooldownSeconds = optional.get();
@@ -454,14 +454,14 @@ public abstract class VCommand extends Arguments implements EssentialsCommand {
 
             CommandResultType commandResultType = perform(plugin);
 
-            if (commandResultType == CommandResultType.SUCCESS && cooldownSeconds != 0 && this.user != null && (!this.user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) || !configuration.isEnableCooldownBypass())) {
+            if (commandResultType == CommandResultType.SUCCESS && cooldownSeconds != 0 && this.user != null && (!this.user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) || !configuration.enableCooldownBypass())) {
                 this.user.addCooldown(key, cooldownSeconds);
             }
 
             return commandResultType;
         } catch (Exception exception) {
 
-            if (plugin.getConfiguration().isEnableDebug()) {
+            if (plugin.getConfiguration().enableDebug()) {
                 exception.printStackTrace();
             }
             return CommandResultType.SYNTAX_ERROR;

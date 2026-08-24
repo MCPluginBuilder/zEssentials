@@ -49,7 +49,7 @@ public class SpigotServer implements EssentialsServer {
 
     @Override
     public List<String> getOfflinePlayersNames() {
-        return this.plugin.getConfiguration().isEnableOfflinePlayersName() ? Arrays.stream(Bukkit.getOfflinePlayers()).map(OfflinePlayer::getName).toList() : getPlayersNames();
+        return this.plugin.getConfiguration().enableOfflinePlayersName() ? Arrays.stream(Bukkit.getOfflinePlayers()).map(OfflinePlayer::getName).toList() : getPlayersNames();
     }
 
     @Override

@@ -528,7 +528,7 @@ public final class ZEssentialsPlugin extends ZPlugin implements EssentialsPlugin
 
     @Override
     public void debug(String string) {
-        if (this.configuration != null && this.configuration.isEnableDebug()) {
+        if (this.configuration != null && this.configuration.enableDebug()) {
             this.getLogger().info(string);
         }
     }

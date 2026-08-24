@@ -6,6 +6,14 @@
 
 # Unreleased
 
+# 1.0.3.9
+
+- **New configuration option**: enable the "First join teleport" in the `config.yml` file; it is now disabled by default.
+- **Added** Faststats https://faststats.dev/project/zessentials/.
+- **Changed** method signature in the configuration interface.
+- **Fixed** MySQL error on create user home tables.
+- **Fixed** Teleport world command permission.
+
 # 1.0.3.8
 
 - Added **text mails** to the mailbox module, to send a message to a player who is not connected (`modules/mailbox/config.yml`):

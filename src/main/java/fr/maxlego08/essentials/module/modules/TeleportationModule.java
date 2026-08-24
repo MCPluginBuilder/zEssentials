@@ -396,7 +396,7 @@ public class TeleportationModule extends ZModule {
     }
 
     public void performFirstJoinRtp(Player player) {
-        if (!enableFirstJoinRtp || player == null || !player.isOnline()) return;
+        if (!plugin.getConfiguration().enableFirstJoinTeleport() || !enableFirstJoinRtp || player == null || !player.isOnline()) return;
 
         World world = plugin.getServer().getWorld(firstJoinRtpWorld);
         if (world == null) {
