@@ -102,7 +102,7 @@ public class SpawnModule extends ZModule {
 
     public void onSpawnLocation(PlayerSpawnLocationEvent event, Player player) {
         User user = getUser(player);
-        if (user != null && user.isFirstJoin()) {
+        if (user != null && user.isFirstJoin() && this.plugin.getConfiguration().enableFirstJoinTeleport()) {
             if (ConfigStorage.firstSpawnLocation != null && ConfigStorage.firstSpawnLocation.isValid()) {
                 event.setSpawnLocation(ConfigStorage.firstSpawnLocation.getLocation());
             } else if (ConfigStorage.spawnLocation != null && ConfigStorage.spawnLocation.isValid()) {

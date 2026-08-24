@@ -226,7 +226,7 @@ public class MailBoxModule extends ZModule {
     private boolean checkCooldown(User user) {
 
         if (this.messageCooldown <= 0) return true;
-        if (user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) && this.plugin.getConfiguration().isEnableCooldownBypass()) {
+        if (user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) && this.plugin.getConfiguration().enableCooldownBypass()) {
             return true;
         }
 

@@ -160,7 +160,7 @@ public class DiscordModule extends ZModule implements DiscordManager {
             try {
                 discordWebhook.execute();
             } catch (Exception exception) {
-                if (plugin.getConfiguration().isEnableDebug()) {
+                if (plugin.getConfiguration().enableDebug()) {
                     exception.printStackTrace();
                 }
             }

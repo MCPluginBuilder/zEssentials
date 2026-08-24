@@ -36,14 +36,14 @@ public interface Configuration extends ConfigurationFile {
      *
      * @return true if debug mode is enabled, false otherwise.
      */
-    boolean isEnableDebug();
+    boolean enableDebug();
 
     /**
      * Checks if cooldown bypass is enabled in the plugin configuration.
      *
      * @return true if cooldown bypass is enabled, false otherwise.
      */
-    boolean isEnableCooldownBypass();
+    boolean enableCooldownBypass();
 
     /**
      * Gets the list of command cooldown configurations from the plugin configuration.
@@ -196,7 +196,7 @@ public interface Configuration extends ConfigurationFile {
      *
      * @return true if command logging is enabled, false otherwise
      */
-    boolean isEnableCommandLog();
+    boolean enableCommandLog();
 
     /**
      * Retrieves the global date format used across the server.
@@ -246,7 +246,7 @@ public interface Configuration extends ConfigurationFile {
      *
      * @return true if fly should be re-enabled automatically, false otherwise
      */
-    boolean isEnableFlyReturn();
+    boolean enableFlyReturn();
 
     /**
      * Retrieves a list of random words used by the plugin for various tasks.
@@ -260,7 +260,7 @@ public interface Configuration extends ConfigurationFile {
      *
      * @return true if the plugin is enabled to display nicknames of online and offline players, false otherwise
      */
-    boolean isEnableOfflinePlayersName();
+    boolean enableOfflinePlayersName();
 
     /**
      * Retrieves the batch auto save interval in milliseconds.
@@ -305,4 +305,11 @@ public interface Configuration extends ConfigurationFile {
      * @return a list of command names that bypass the module disable check
      */
     List<String> getForceCommands();
+
+    /**
+     * Checks whether players should be teleported on their first join.
+     *
+     * @return true if first-join teleportation is enabled, false otherwise
+     */
+    boolean enableFirstJoinTeleport();
 }

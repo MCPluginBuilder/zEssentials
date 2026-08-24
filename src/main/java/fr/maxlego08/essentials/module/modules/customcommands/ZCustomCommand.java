@@ -57,7 +57,7 @@ public class ZCustomCommand extends VCommand {
         long cooldown = this.customCommand.cooldown();
         if (cooldown <= 0 || this.user == null) return true;
 
-        if (this.user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) && this.configuration.isEnableCooldownBypass()) {
+        if (this.user.hasPermission(Permission.ESSENTIALS_BYPASS_COOLDOWN) && this.configuration.enableCooldownBypass()) {
             return true;
         }
 

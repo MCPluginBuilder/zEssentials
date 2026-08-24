@@ -300,3 +300,6 @@ blacklist-uuids:
 default-options:
   - option: WORLDEDIT_INVENTORY
     value: true
+
+# Teleports players on their first join to the configured first-spawn, spawn, or random teleport location
+enable-first-join-teleport: false

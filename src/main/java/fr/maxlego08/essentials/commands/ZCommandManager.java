@@ -418,7 +418,7 @@ public class ZCommandManager extends ZUtils implements CommandManager {
         int cooldownSeconds = 0;
 
         var configuration = this.plugin.getConfiguration();
-        if (user != null && (!user.hasPermission(fr.maxlego08.essentials.api.commands.Permission.ESSENTIALS_BYPASS_COOLDOWN) || !configuration.isEnableCooldownBypass())) {
+        if (user != null && (!user.hasPermission(fr.maxlego08.essentials.api.commands.Permission.ESSENTIALS_BYPASS_COOLDOWN) || !configuration.enableCooldownBypass())) {
             Optional<Integer> optional = configuration.getCooldown(player, key);
             if (optional.isPresent()) {
                 cooldownSeconds = optional.get();
